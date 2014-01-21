@@ -18,11 +18,10 @@
  * under the License.
  *
  */
+
 package org.eris;
 
-import org.eris.security.Ticket;
-
-public interface Router<T> extends Node
+public interface Route
 {
-    public void route(Ticket t, Address a, ErisMessage<T> m);
+	
 }
