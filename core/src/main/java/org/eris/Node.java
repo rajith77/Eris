@@ -20,9 +20,29 @@
  */
 package org.eris;
 
-import org.eris.security.Ticket;
-
-public interface Router<T> extends Node
+/**
+ * Defines the behavior for an Eris node.
+ * 
+ */
+public interface Node
 {
-    public void route(Ticket t, Address a, ErisMessage<T> m);
+    public String getIdentifer();
+
+    public int getLoad();
+
+    public int getCapacity();
+
+    public void shutdown();
+
+    /**
+     * Make n number of deep copies of this Node. 
+     */
+    public void clone(int copies);
+
+    /**
+     * Routes to other Eris nodes
+     */
+    public Route[] getLinks();
+
+    //public 
 }
