@@ -133,8 +133,8 @@ set(eris_SOURCES
 #    PROPERTY COMPILE_FLAGS -Wno-strict-aliasing
 #    )
 
-add_library(eris SHARED ${server_SOURCES})
-target_link_libraries(eris ${proton_lib} ${pthread_lib} ${rt_lib} ${UUID_LIB} ${TIME_LIB} ${PYTHON_LIBRARIES})
+add_library(eris SHARED ${eris_SOURCES})
+target_link_libraries(eris ${dispatch_lib} ${proton_lib} ${pthread_lib} ${rt_lib} ${UUID_LIB} ${TIME_LIB} ${PYTHON_LIBRARIES})
 set_target_properties(eris PROPERTIES
                       VERSION "${SO_VERSION}"
                       SOVERSION "${SO_VERSION_MAJOR}"

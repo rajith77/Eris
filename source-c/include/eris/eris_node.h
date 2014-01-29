@@ -1,5 +1,5 @@
-#ifndef __eris_h__
-#define __eris_h__ 1
+#ifndef __eris_node_h__
+#define __eris_node_h__ 1
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,6 +17,19 @@
  * under the License.
  */
 
-#include <eris/eris_node.h>
+typedef struct eris_node_spec_t eris_node_spec_t;
+typedef struct eris_node_t eris_node_t;
+
+struct eris_node_spec_t {
+   char *addr_namespace;
+   char *address;
+};
+
+// Need to figure out a way to keep a list of backup nodes.
+struct eris_node_t {
+   eris_node_spec_t *node_spec;   
+};
+
+eris_node_t *eris_node(eris_node_spec_t *spec);
 
 #endif
