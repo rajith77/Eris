@@ -1,5 +1,5 @@
-#ifndef __eris_node_h__
-#define __eris_node_h__ 1
+#ifndef __queue_node_h__
+#define __queue_node_h__ 1
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,19 +17,23 @@
  * under the License.
  */
 
-typedef struct eris_node_spec_t eris_node_spec_t;
-typedef struct eris_node_t eris_node_t;
+#include <qpid/dispatch.h>
 
-struct eris_node_spec_t {
+typedef struct queue_node_spec_t queue_node_spec_t;
+typedef struct queue_node_t queue_node_t;
+
+struct queue_node_spec_t {
    char *addr_namespace;
    char *address;
+   char *node_desc;
 };
 
 // Need to figure out a way to keep a list of backup nodes.
-struct eris_node_t {
-   eris_node_spec_t *node_spec;   
+struct queue_node_t {
+   queue_node_spec_t *node_spec;
+   qd_node_t *qd_node;
 };
 
-eris_node_t *eris_node(eris_node_spec_t *spec);
+queue_node_t *queue_node(queue_node_spec_t *spec, qd_dispatch_t *_dx);
 
 #endif
