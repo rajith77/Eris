@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
+import org.eris.messaging.ConnectionSettings;
 import org.eris.transport.NetworkConnection;
 import org.eris.transport.Receiver;
 import org.eris.transport.Sender;
@@ -76,8 +77,9 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
     }
 
     @Override
-    public void close()
+    public void close() throws TransportException
     {
-        // TODO Auto-generated method stub
+        _sender.close();
+        _receiver.close();
     }
 }

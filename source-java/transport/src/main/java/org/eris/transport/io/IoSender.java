@@ -86,11 +86,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
 
         senderThread.setDaemon(true);
         senderThread.setName(String.format("IoSender - %s", socket.getRemoteSocketAddress()));
-    }
-
-    public void initiate()
-    {
-        senderThread.start();
+        senderThread.start(); 
     }
 
     private static final int pof2(int n)
