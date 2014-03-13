@@ -32,8 +32,8 @@ public final class Threading
         try
         {
             Class threadFactoryClass = 
-                    Class.forName(System.getProperty("qpid.thread_factory", 
-                            "org.apache.qpid.thread.DefaultThreadFactory"));
+                    Class.forName(System.getProperty("eris.thread_factory", 
+                            "org.eris.threading.DefaultThreadFactory"));
 
             threadFactory = (ThreadFactory)threadFactoryClass.newInstance();
         }
