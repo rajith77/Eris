@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.engine.Connection;
+import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sasl;
 import org.apache.qpid.proton.engine.Transport;
 import org.eris.logging.Logger;
@@ -18,7 +19,7 @@ import org.eris.transport.io.IoNetworkConnection;
 import org.eris.util.ConditionManager;
 import org.eris.util.ConditionManagerTimeoutException;
 
-public class ProtonConnection implements Receiver<ByteBuffer>
+public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messaging.Connection
 {
     private static final Logger _logger = Logger.get(ProtonConnection.class);
 
@@ -81,6 +82,11 @@ public class ProtonConnection implements Receiver<ByteBuffer>
         }
     }
 
+    public org.eris.messaging.Session createSession()
+    {
+        
+    }
+    
     // Needs to expand to handle other mechs
     void doSasl(Sasl sasl)
     {
@@ -121,6 +127,18 @@ public class ProtonConnection implements Receiver<ByteBuffer>
             buf.put(temp);
             _transport.processInput();
             data.position(data.position() + maxAllowed);
+        }
+        if (_state == State.UNINITIALIZED)
+        {
+            if (_connection.getRemoteState() == EndpointState.ACTIVE)
+            {
+                _state = State.ACTIVE;
+                _connectionReady.setValueAndNotify(true);
+            }
+        }
+        else
+        {
+            
         }
     }
 
