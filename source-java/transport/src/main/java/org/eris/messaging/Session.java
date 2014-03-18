@@ -5,4 +5,6 @@ public interface Session
     public Sender createSender(String address);
     
     public Receiver createReceiver(String address);
+
+    public void close();
 }

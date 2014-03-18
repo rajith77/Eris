@@ -1,12 +1,17 @@
 package org.eris.transport.amqp.proton;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.qpid.proton.Proton;
+import org.apache.qpid.proton.amqp.transport.DeliveryState;
 import org.apache.qpid.proton.engine.Connection;
+import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sasl;
+import org.apache.qpid.proton.engine.Session;
 import org.apache.qpid.proton.engine.Transport;
 import org.eris.logging.Logger;
 import org.eris.messaging.ConnectionException;
@@ -19,9 +24,9 @@ import org.eris.transport.io.IoNetworkConnection;
 import org.eris.util.ConditionManager;
 import org.eris.util.ConditionManagerTimeoutException;
 
-public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messaging.Connection
+public class ConnectionImpl implements Receiver<ByteBuffer>, org.eris.messaging.Connection
 {
-    private static final Logger _logger = Logger.get(ProtonConnection.class);
+    private static final Logger _logger = Logger.get(ConnectionImpl.class);
 
     enum State {UNINITIALIZED, ACTIVE, DETACHED, CLOSED};
 
@@ -31,20 +36,22 @@ public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messagin
     private Transport _transport = Proton.transport();
     private Connection _connection;
     private State _state = State.UNINITIALIZED;
-
+    
+    private final Map<Session, SessionImpl> _sessionMap = new ConcurrentHashMap<Session, SessionImpl>();
+        
     private ConditionManager _connectionReady = new ConditionManager(false);
 
-    public ProtonConnection(String url)
+    public ConnectionImpl(String url)
     {
 
     }
 
-    public ProtonConnection(String host, int port)
+    public ConnectionImpl(String host, int port)
     {
 
     }
 
-    public ProtonConnection(ConnectionSettings settings)
+    public ConnectionImpl(ConnectionSettings settings)
     {
         _settings = settings;
     }
@@ -84,7 +91,11 @@ public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messagin
 
     public org.eris.messaging.Session createSession()
     {
-        
+        Session ssn = _connection.session();
+        ssn.open();
+        SessionImpl session = new SessionImpl(this,ssn);
+        _sessionMap.put(ssn, session);
+        return session;
     }
     
     // Needs to expand to handle other mechs
@@ -138,14 +149,31 @@ public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messagin
         }
         else
         {
-            
+            Delivery delivery = _connection.getWorkHead();
+            while (delivery != null)
+            {
+            	if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
+            	{
+            		delivery.disposition(delivery.getRemoteState());
+            		TrackerImpl tracker = (TrackerImpl)delivery.getContext();
+            		if (delivery.getRemoteState() != null)
+            		{
+            			if (delivery.getRemoteState() instanceof Accepted)
+            			{
+            				
+            			}
+            		}
+            		tracker.setState(delivery.getRemoteState() == DeliveryState. );
+            		
+            	}
+            	delivery = delivery.getWorkNext();
+            }
         }
     }
 
     @Override
     public void exception(Throwable t)
     {
-        // TODO Auto-generated method stub
 
     }
 
@@ -157,7 +185,7 @@ public class ProtonConnection implements Receiver<ByteBuffer>, org.eris.messagin
     
     public static void main(String[] args) throws Exception
     {
-        ProtonConnection con = new ProtonConnection(new ConnectionSettings());
+        ConnectionImpl con = new ConnectionImpl(new ConnectionSettings());
         con.connect();
     }
 }

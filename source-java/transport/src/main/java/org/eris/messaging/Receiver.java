@@ -1,6 +1,6 @@
 package org.eris.messaging;
 
-public class Receiver
+public interface Receiver
 {
 
 }
