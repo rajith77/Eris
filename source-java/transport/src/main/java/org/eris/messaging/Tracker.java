@@ -22,12 +22,12 @@ package org.eris.messaging;
 
 public interface Tracker
 {
-	public enum TrackerState {ACCEPTED, REJECTED, IN_PROGRESS, FAILED};
+	public enum TrackerState {ACCEPTED, REJECTED, RELEASED, PENDING, FAILED};
 
 	public TrackerState getState();
 
 	/**
-	 * Blocks until the delivery is accepted, rejected or have failed
+	 * Blocks until the delivery is accepted, rejected, released or have failed
 	 * due to the underlying connection failure.
 	 */
 	public void awaitCompletion();

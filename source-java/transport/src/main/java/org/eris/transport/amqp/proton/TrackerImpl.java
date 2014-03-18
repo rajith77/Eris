@@ -5,17 +5,17 @@ import org.eris.util.ConditionManager;
 public class TrackerImpl implements org.eris.messaging.Tracker
 {
 	private TrackerState _state = null;
-	private ConditionManager _inProgress = new ConditionManager(true);
+	private ConditionManager _pending = new ConditionManager(true);
 
 	TrackerImpl()
 	{
-		_state = TrackerState.IN_PROGRESS;
+		_state = TrackerState.PENDING;
 	}
 
 	void setState(TrackerState state)
 	{
 		_state = state;
-		_inProgress.setValueAndNotify(false);
+		_pending.setValueAndNotify(false);
 	}
 	
 	@Override
@@ -27,6 +27,6 @@ public class TrackerImpl implements org.eris.messaging.Tracker
 	@Override
 	public void awaitCompletion()
 	{
-		_inProgress.waitUntilFalse();
+		_pending.waitUntilFalse();
 	}
 }

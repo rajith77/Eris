@@ -6,6 +6,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.qpid.proton.Proton;
+import org.apache.qpid.proton.amqp.messaging.Accepted;
+import org.apache.qpid.proton.amqp.messaging.Rejected;
+import org.apache.qpid.proton.amqp.messaging.Released;
 import org.apache.qpid.proton.amqp.transport.DeliveryState;
 import org.apache.qpid.proton.engine.Connection;
 import org.apache.qpid.proton.engine.Delivery;
@@ -16,6 +19,7 @@ import org.apache.qpid.proton.engine.Transport;
 import org.eris.logging.Logger;
 import org.eris.messaging.ConnectionException;
 import org.eris.messaging.ConnectionSettings;
+import org.eris.messaging.Tracker.TrackerState;
 import org.eris.transport.NetworkConnection;
 import org.eris.transport.Receiver;
 import org.eris.transport.Sender;
@@ -149,25 +153,7 @@ public class ConnectionImpl implements Receiver<ByteBuffer>, org.eris.messaging.
         }
         else
         {
-            Delivery delivery = _connection.getWorkHead();
-            while (delivery != null)
-            {
-            	if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
-            	{
-            		delivery.disposition(delivery.getRemoteState());
-            		TrackerImpl tracker = (TrackerImpl)delivery.getContext();
-            		if (delivery.getRemoteState() != null)
-            		{
-            			if (delivery.getRemoteState() instanceof Accepted)
-            			{
-            				
-            			}
-            		}
-            		tracker.setState(delivery.getRemoteState() == DeliveryState. );
-            		
-            	}
-            	delivery = delivery.getWorkNext();
-            }
+            processDeliveries();
         }
     }
 
@@ -181,6 +167,35 @@ public class ConnectionImpl implements Receiver<ByteBuffer>, org.eris.messaging.
     public void closed()
     {
         // TODO Auto-generated method stub
+    }
+    
+    public void processDeliveries()
+    {
+        Delivery delivery = _connection.getWorkHead();
+        while (delivery != null)
+        {
+            if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
+            {
+                delivery.disposition(delivery.getRemoteState());
+                TrackerImpl tracker = (TrackerImpl)delivery.getContext();
+                if (delivery.remotelySettled() && delivery.getRemoteState() != null)
+                {
+                    if (delivery.getRemoteState() instanceof Accepted)
+                    {
+                        tracker.setState(TrackerState.ACCEPTED);
+                    }
+                    else if (delivery.getRemoteState() instanceof Rejected)
+                    {
+                        tracker.setState(TrackerState.REJECTED);
+                    }
+                    else if (delivery.getRemoteState() instanceof Released)
+                    {
+                        tracker.setState(TrackerState.RELEASED);
+                    }
+                }                
+            }
+            delivery = delivery.getWorkNext();
+        }
     }
     
     public static void main(String[] args) throws Exception

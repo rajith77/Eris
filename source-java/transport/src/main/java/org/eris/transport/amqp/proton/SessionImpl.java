@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.qpid.proton.amqp.messaging.Source;
 import org.apache.qpid.proton.amqp.messaging.Target;
+import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sender;
 import org.apache.qpid.proton.engine.Session;
 
@@ -24,8 +25,9 @@ public class SessionImpl implements org.eris.messaging.Session
 	}
 
 	@Override
-	public org.eris.messaging.Sender createSender(String address)
+	public org.eris.messaging.Sender createSender(String address) throws org.eris.messaging.SessionException
 	{
+	    checkPreConditions();
 		Sender sender = _session.sender(address);
 		Target target = new Target();
 		target.setAddress(address);
@@ -41,9 +43,9 @@ public class SessionImpl implements org.eris.messaging.Session
 	}
 
 	@Override
-	public org.eris.messaging.Receiver createReceiver(String address)
+	public org.eris.messaging.Receiver createReceiver(String address) throws org.eris.messaging.SessionException
 	{
-		// TODO Auto-generated method stub
+	    checkPreConditions();
 		return null;
 	}
 
@@ -52,7 +54,7 @@ public class SessionImpl implements org.eris.messaging.Session
 	{
 		_session.close();
 	}
-
+	
 	long getNextDeliveryTag()
 	{
 		return _deliveryTag.incrementAndGet();
@@ -61,5 +63,18 @@ public class SessionImpl implements org.eris.messaging.Session
 	ConnectionImpl getConnection()
 	{
 		return _conn;
+	}
+	
+	void markSessionReady()
+	{
+	    
+	}
+
+	void checkPreConditions() throws org.eris.messaging.SessionException
+	{
+	    if (!(_session.getLocalState() == EndpointState.ACTIVE && _session.getRemoteState() == EndpointState.ACTIVE))
+	    {
+	        throw new org.eris.messaging.SessionException("Session is closed");
+	    }
 	}
 }
