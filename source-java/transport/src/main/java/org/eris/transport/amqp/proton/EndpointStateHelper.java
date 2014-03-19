@@ -18,15 +18,17 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris.transport.amqp.proton;
 
-public interface Sender
+import java.util.EnumSet;
+
+import org.apache.qpid.proton.engine.EndpointState;
+
+public class EndpointStateHelper
 {
-	void offerCredits(int credits) throws SenderException;
+	public static EnumSet<EndpointState> ACTIVE = EnumSet.of(EndpointState.ACTIVE);
 
-	int getUnsettled() throws SenderException;
+	public static EnumSet<EndpointState> CLOSED = EnumSet.of(EndpointState.CLOSED);
 
-	Tracker send(Message msg) throws SenderException;
-
-	void close() throws TransportException;
+	public static EnumSet<EndpointState> ANY = EnumSet.of(EndpointState.ACTIVE, EndpointState.CLOSED, EndpointState.UNINITIALIZED);
 }

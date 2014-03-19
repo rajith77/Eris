@@ -20,15 +20,20 @@
  */
 package org.eris.transport.amqp.proton;
 
+import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
 import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sender;
 import org.apache.qpid.proton.message.Message;
+import org.eris.util.ConditionManager;
+import org.eris.util.ConditionManagerTimeoutException;
 
 public class SenderImpl implements org.eris.messaging.Sender 
 {
 	private SessionImpl _ssn;
 	private Sender _sender;
+
+	private ConditionManager _senderReady = new ConditionManager(false);
 
 	SenderImpl(SessionImpl ssn, Sender sender)
 	{
@@ -48,14 +53,19 @@ public class SenderImpl implements org.eris.messaging.Sender
 		{
 			byte[] tag = String.valueOf(_ssn.getNextDeliveryTag()).getBytes();
 			Delivery delivery = _sender.delivery(tag);
+			TrackerImpl tracker = new TrackerImpl();
+			delivery.setContext(tracker);
+			if (_sender.getSenderSettleMode() == SenderSettleMode.SETTLED)
+			{
+				delivery.settle();
+				//tracker.setState();
+				tracker.markSettled();
+			}
 
 			Message m = ((MessageImpl) msg).getProtocolMessage();
 			byte[] buffer = new byte[1024];
 			int encoded = m.encode(buffer, 0, buffer.length);
 			_sender.send(buffer, 0, encoded);
-
-			TrackerImpl tracker = new TrackerImpl();
-			delivery.setContext(tracker);
 			return tracker;
 		}
 		else
@@ -64,8 +74,48 @@ public class SenderImpl implements org.eris.messaging.Sender
 		}
 	}
 
-	public void close()
+	@Override
+	public void offerCredits(int credits) throws org.eris.messaging.SenderException
 	{
-		_sender.close();
+		checkPreConditions();
+		_sender.offer(credits);
+	}
+
+	@Override
+	public int getUnsettled() throws org.eris.messaging.SenderException
+	{
+		checkPreConditions();
+		return _sender.getUnsettled();
+	}
+
+	@Override
+	public void close() throws org.eris.messaging.TransportException
+	{
+		_ssn.closeLink(_sender);
+	}
+
+	void markSenderReady()
+	{
+		_senderReady.setValueAndNotify(true);
+	}
+
+	void waitUntilActive(long timeout) throws org.eris.messaging.TimeoutException
+	{
+		try
+		{
+			_senderReady.waitUntilTrue(timeout);
+		}
+		catch (ConditionManagerTimeoutException e)
+		{
+			throw new org.eris.messaging.TimeoutException("Timeout waiting for session to be active");
+		}
+	}
+
+	void checkPreConditions() throws org.eris.messaging.SenderException
+	{
+		if (!(_sender.getLocalState() == EndpointState.ACTIVE && _sender.getRemoteState() == EndpointState.ACTIVE))
+		{
+			throw new org.eris.messaging.SenderException("Sender is closed");
+		}
 	}
 }

@@ -17,16 +17,10 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- */
+*/
 package org.eris.messaging;
 
-public interface Sender
+public enum SenderMode
 {
-	void offerCredits(int credits) throws SenderException;
-
-	int getUnsettled() throws SenderException;
-
-	Tracker send(Message msg) throws SenderException;
-
-	void close() throws TransportException;
+	AT_MOST_ONCE, AT_LEAST_ONCE;
 }

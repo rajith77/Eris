@@ -1,7 +1,7 @@
 package org.eris.messaging;
 
 @SuppressWarnings("serial")
-public class SessionException extends Exception
+public class SessionException extends MessagingException
 {
     public SessionException(String msg)
     {

@@ -30,5 +30,7 @@ public interface Tracker
 	 * Blocks until the delivery is accepted, rejected, released or have failed
 	 * due to the underlying connection failure.
 	 */
-	public void awaitCompletion();
+	public void awaitSettlement();
+
+	public boolean isSettled();
 }

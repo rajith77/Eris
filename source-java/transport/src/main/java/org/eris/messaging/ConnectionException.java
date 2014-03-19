@@ -1,7 +1,7 @@
 package org.eris.messaging;
 
 @SuppressWarnings("serial")
-public class ConnectionException extends Exception
+public class ConnectionException extends MessagingException
 {
     public ConnectionException(String msg)
     {

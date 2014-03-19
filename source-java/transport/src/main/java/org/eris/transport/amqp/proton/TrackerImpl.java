@@ -6,6 +6,7 @@ public class TrackerImpl implements org.eris.messaging.Tracker
 {
 	private TrackerState _state = null;
 	private ConditionManager _pending = new ConditionManager(true);
+	private boolean _settled = false;
 
 	TrackerImpl()
 	{
@@ -15,9 +16,28 @@ public class TrackerImpl implements org.eris.messaging.Tracker
 	void setState(TrackerState state)
 	{
 		_state = state;
+	}
+
+	void markSettled()
+	{
+		_settled = true;
 		_pending.setValueAndNotify(false);
 	}
-	
+
+	boolean isTerminalState()
+	{
+		switch (_state)
+		{
+		case ACCEPTED:
+		case REJECTED:
+		case RELEASED:
+		case FAILED:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	@Override
 	public TrackerState getState()
 	{
@@ -25,8 +45,14 @@ public class TrackerImpl implements org.eris.messaging.Tracker
 	}
 
 	@Override
-	public void awaitCompletion()
+	public void awaitSettlement()
 	{
 		_pending.waitUntilFalse();
+	}
+
+	@Override
+	public boolean isSettled()
+	{
+		return _settled;
 	}
 }
