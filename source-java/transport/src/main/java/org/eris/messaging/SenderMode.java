@@ -17,10 +17,10 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 package org.eris.messaging;
 
 public enum SenderMode
 {
-	AT_MOST_ONCE, AT_LEAST_ONCE;
+    AT_MOST_ONCE, AT_LEAST_ONCE;
 }

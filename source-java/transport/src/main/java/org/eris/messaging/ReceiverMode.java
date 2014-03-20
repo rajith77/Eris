@@ -20,7 +20,7 @@
  */
 package org.eris.messaging;
 
-public interface Receiver
+public enum ReceiverMode
 {
-
+    AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE
 }

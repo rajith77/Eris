@@ -71,13 +71,9 @@ final class IoReceiver implements Runnable
        }
        receiverThread.setDaemon(true);
        receiverThread.setName(String.format("IoReceiver - %s", socket.getRemoteSocketAddress()));
-   }
-
-   public void initiate()
-   {
        receiverThread.start();
    }
-
+  
    public void close() throws TransportException
    {
        close(false);
