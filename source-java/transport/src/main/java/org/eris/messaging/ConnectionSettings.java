@@ -12,7 +12,7 @@ public class ConnectionSettings
 
     protected int _writeBufferSize = 65535;
 
-    protected int _connectTimeout = 30000;
+    protected int _connectTimeout = 60000;
 
     protected long _idleTimeout = 60000;
 

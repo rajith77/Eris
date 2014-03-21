@@ -107,7 +107,6 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         _transport.bind(_connection);
 
         doSasl(_transport.sasl());
-        _connection.open();
         write();
         try
         {
@@ -117,6 +116,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         {
             throw new org.eris.messaging.TimeoutException("Timeout while waiting for connection to be ready", e);
         }
+        _connectionReady.waitUntilTrue();
     }
 
     @Override
@@ -124,9 +124,9 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
             org.eris.messaging.ConnectionException, org.eris.messaging.TimeoutException
     {
         Session ssn = _connection.session();
-        ssn.open();
         SessionImpl session = new SessionImpl(this, ssn);
         _sessionMap.put(ssn, session);
+        ssn.open();
         write();
         session.waitUntilActive(getDefaultTimeout());
         return session;
@@ -151,7 +151,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
                 ByteBuffer data = _transport.getOutputBuffer();
                 _sender.send(data);
                 _sender.flush();
-                //_transport.outputConsumed();
+                _transport.outputConsumed();
             }
         }
         catch (org.eris.transport.TransportException e)
@@ -178,6 +178,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         {
             if (_connection.getRemoteState() == EndpointState.ACTIVE)
             {
+            	_connection.open();
                 _state = State.ACTIVE;
                 _connectionReady.setValueAndNotify(true);
             }
@@ -248,12 +249,13 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     void processSessions()
     {
-        Session ssn = _connection.sessionHead(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+        Session ssn = _connection.sessionHead(EndpointStateHelper.UNINITIALIZED, EndpointStateHelper.ACTIVE);
         while (ssn != null)
         {
             SessionImpl ssnImpl = _sessionMap.get(ssn);
+            ssn.open();
             ssnImpl.markSessionReady();
-            ssn = ssn.next(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+            ssn = ssn.next(EndpointStateHelper.UNINITIALIZED, EndpointStateHelper.ACTIVE);
         }
 
         ssn = _connection.sessionHead(EndpointStateHelper.ANY, EndpointStateHelper.CLOSED);
@@ -267,11 +269,12 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     void processLinks()
     {
-        Link link = _connection.linkHead(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+        Link link = _connection.linkHead(EndpointStateHelper.UNINITIALIZED, EndpointStateHelper.ACTIVE);
         while (link != null)
         {
+        	link.open();
             _sessionMap.get(link.getSession()).markLinkReady(link);
-            link = link.next(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+            link = link.next(EndpointStateHelper.UNINITIALIZED, EndpointStateHelper.ACTIVE);
         }
 
         link = _connection.linkHead(EndpointStateHelper.ANY, EndpointStateHelper.CLOSED);
@@ -300,6 +303,9 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         con.connect();
         
         SessionImpl ssn = (SessionImpl)con.createSession();
-        SenderImpl sender = (SenderImpl)ssn.createSender("hello", SenderMode.AT_LEAST_ONCE);
+        SenderImpl sender = (SenderImpl)ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);
+        MessageImpl msg = new MessageImpl();
+        msg.setContent("Hello World");
+        sender.send(msg);
     }
 }

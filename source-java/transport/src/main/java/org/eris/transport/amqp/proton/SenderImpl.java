@@ -42,7 +42,7 @@ public class SenderImpl implements org.eris.messaging.Sender
 	}
 
 	// Need to handle buffer overflows
-	public org.eris.messaging.Tracker send(org.eris.messaging.Message msg) throws org.eris.messaging.SenderException
+	public org.eris.messaging.Tracker send(org.eris.messaging.Message msg) throws org.eris.messaging.SenderException, org.eris.messaging.TransportException
 	{
 		if (_sender.getLocalState() == EndpointState.CLOSED || _sender.getRemoteState() == EndpointState.CLOSED)
 		{
@@ -66,6 +66,7 @@ public class SenderImpl implements org.eris.messaging.Sender
 			byte[] buffer = new byte[1024];
 			int encoded = m.encode(buffer, 0, buffer.length);
 			_sender.send(buffer, 0, encoded);
+			_ssn.write();
 			return tracker;
 		}
 		else
@@ -75,10 +76,11 @@ public class SenderImpl implements org.eris.messaging.Sender
 	}
 
 	@Override
-	public void offerCredits(int credits) throws org.eris.messaging.SenderException
+	public void offerCredits(int credits) throws org.eris.messaging.SenderException, org.eris.messaging.TransportException
 	{
 		checkPreConditions();
 		_sender.offer(credits);
+		_ssn.write();
 	}
 
 	@Override

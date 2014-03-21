@@ -18,19 +18,29 @@
  * under the License.
  *
  */
-package org.eris.transport.amqp.proton;
+package org.eris.messaging;
 
-import java.util.EnumSet;
+import org.eris.transport.amqp.proton.MessagingImpl;
 
-import org.apache.qpid.proton.engine.EndpointState;
-
-public class EndpointStateHelper
+public class Messaging
 {
-	public static EnumSet<EndpointState> UNINITIALIZED = EnumSet.of(EndpointState.UNINITIALIZED);
+	public static Message message()
+	{
+		return MessagingImpl.message();
+	}
 
-	public static EnumSet<EndpointState> ACTIVE = EnumSet.of(EndpointState.ACTIVE);
+	public static Connection connection(String url)
+	{
+		return MessagingImpl.connection(url);
+	}
 
-	public static EnumSet<EndpointState> CLOSED = EnumSet.of(EndpointState.CLOSED);
+	public static Connection connection(String host, int port)
+	{
+		return MessagingImpl.connection(host, port);
+	}
 
-	public static EnumSet<EndpointState> ANY = EnumSet.of(EndpointState.ACTIVE, EndpointState.CLOSED, EndpointState.UNINITIALIZED);
+	public static Connection connection(ConnectionSettings settings)
+	{
+		return MessagingImpl.connection(settings);
+	}
 }

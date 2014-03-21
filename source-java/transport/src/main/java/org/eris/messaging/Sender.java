@@ -22,11 +22,11 @@ package org.eris.messaging;
 
 public interface Sender
 {
-	void offerCredits(int credits) throws SenderException;
+	void offerCredits(int credits) throws SenderException, TransportException;
 
-	int getUnsettled() throws SenderException;
+	int getUnsettled() throws SenderException, TransportException;
 
-	Tracker send(Message msg) throws SenderException;
+	Tracker send(Message msg) throws SenderException, TransportException;
 
 	void close() throws TransportException;
 }

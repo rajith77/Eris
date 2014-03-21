@@ -64,7 +64,6 @@ public class SessionImpl implements org.eris.messaging.Session
 		source.setAddress(address);
 		sender.setSource(source);
 		sender.setSenderSettleMode(mode == SenderMode.AT_MOST_ONCE ? SenderSettleMode.SETTLED : SenderSettleMode.UNSETTLED);
-		sender.open();
 
 		SenderImpl senderImpl = new SenderImpl(this,sender);
 		_senders.put(sender, senderImpl);
@@ -134,6 +133,11 @@ public class SessionImpl implements org.eris.messaging.Session
 		{
 			_senders.remove(link);
 		}
+	}
+
+	void write() throws org.eris.messaging.TransportException
+	{
+		_conn.write();
 	}
 
 	void checkPreConditions() throws org.eris.messaging.SessionException
