@@ -126,7 +126,8 @@ set(CATCH_UNDEFINED "-Wl,--no-undefined")
 ## Build the Eris toolkit library
 ##
 set(eris_SOURCES
-    src/eris_node.c
+    src/queue_node.c
+    src/util.c
     )
 
 #set_property(SOURCE src/python_embedded.c src/router_pynode.c
@@ -145,7 +146,6 @@ install(TARGETS eris
 file(GLOB headers "include/eris/*.h")
 install(FILES ${headers} DESTINATION ${INCLUDE_INSTALL_DIR}/eris)
 # The header files for the toolkit that can be used within python.
-install(FILES include/eris/eris.h DESTINATION ${INCLUDE_INSTALL_DIR}/eris)
 install(FILES etc/eris.conf DESTINATION ${SYSCONF_INSTALL_DIR}/eris)
 
 ##

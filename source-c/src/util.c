@@ -18,6 +18,9 @@
 */
 
 #include <eris/util.h>
+#include <string.h>
+#include <qpid/dispatch/ctools.h>
+#include <qpid/dispatch/alloc.h>
 
 const char* strconcat(const char *s1, const char *s2)
 {
