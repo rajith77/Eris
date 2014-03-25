@@ -28,5 +28,19 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+     <dependency>
+       <groupId>org.proton.eris</groupId>
+       <artifactId>transport</artifactId>
+       <version>${project.version}</version>
+     </dependency>
+     <dependency>
+         <groupId>org.apache.qpid</groupId>
+         <artifactId>proton-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.qpid</groupId>
+         <artifactId>proton-jms</artifactId>
+      </dependency>
+
   </dependencies>
 </project>
