@@ -44,8 +44,6 @@ public class SessionImpl implements org.eris.messaging.Session
 	private final Map<Sender, SenderImpl> _senders = new ConcurrentHashMap<Sender, SenderImpl>(2);
 	private final Map<Sender, ReceiverImpl> _receivers = new ConcurrentHashMap<Sender, ReceiverImpl>(2);
 
-	private ConditionManager _sessionReady = new ConditionManager(false);
-
 	SessionImpl(ConnectionImpl conn, Session ssn)
 	{
 		_conn = conn;
@@ -64,11 +62,11 @@ public class SessionImpl implements org.eris.messaging.Session
 		source.setAddress(address);
 		sender.setSource(source);
 		sender.setSenderSettleMode(mode == SenderMode.AT_MOST_ONCE ? SenderSettleMode.SETTLED : SenderSettleMode.UNSETTLED);
+		sender.open();
 
-		SenderImpl senderImpl = new SenderImpl(this,sender);
+		SenderImpl senderImpl = new SenderImpl(address,this,sender);
 		_senders.put(sender, senderImpl);
 		_conn.write();
-		senderImpl.waitUntilActive(_conn.getDefaultTimeout());
 		return senderImpl;
 	}
 
@@ -95,32 +93,6 @@ public class SessionImpl implements org.eris.messaging.Session
 		return _conn;
 	}
 
-	void markSessionReady()
-	{
-		_sessionReady.setValueAndNotify(true);
-	}
-
-	void waitUntilActive(long timeout) throws org.eris.messaging.TimeoutException
-	{
-		try
-		{
-			_sessionReady.waitUntilTrue(timeout);
-		}
-		catch (ConditionManagerTimeoutException e)
-		{
-			throw new org.eris.messaging.TimeoutException("Timeout waiting for session to be active");
-		}
-	}
-
-	void markLinkReady(Link link)
-	{
-		if (link instanceof Sender)
-		{
-			SenderImpl sender = _senders.get(link);
-			sender.markSenderReady();
-		}
-	}
-
 	void closeLink(Link link) throws org.eris.messaging.TransportException
 	{
 		link.close();
@@ -142,7 +114,7 @@ public class SessionImpl implements org.eris.messaging.Session
 
 	void checkPreConditions() throws org.eris.messaging.SessionException
 	{
-		if (!(_session.getLocalState() == EndpointState.ACTIVE && _session.getRemoteState() == EndpointState.ACTIVE))
+		if (_session.getLocalState() != EndpointState.ACTIVE)
 		{
 			throw new org.eris.messaging.SessionException("Session is closed");
 		}

@@ -22,5 +22,21 @@ package org.eris.messaging;
 
 public interface Receiver
 {
+    String getAddress();
 
+    int getCapacity();
+
+    int getAvailable();
+
+    int getUnsettled();
+
+    Message get() throws ReceiverException;
+
+    Message get(long timeout) throws TransportException, ReceiverException, TimeoutException;
+
+    Message fetch() throws TransportException, ReceiverException;
+
+    Message fetch(long timeout) throws TransportException, ReceiverException, TimeoutException;
+
+    void setCapacity(int credits) throws TransportException, ReceiverException;
 }
