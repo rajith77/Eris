@@ -20,6 +20,8 @@
  */
 package org.eris.transport.amqp.proton;
 
+import java.nio.ByteBuffer;
+
 import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
 import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.EndpointState;
@@ -56,7 +58,7 @@ public class SenderImpl implements org.eris.messaging.Sender
 
         if (msg instanceof MessageImpl)
         {
-            byte[] tag = String.valueOf(_ssn.getNextDeliveryTag()).getBytes();
+            byte[] tag = longToBytes(_ssn.getNextDeliveryTag());
             Delivery delivery = _sender.delivery(tag);
             TrackerImpl tracker = new TrackerImpl();
             delivery.setContext(tracker);
@@ -85,7 +87,14 @@ public class SenderImpl implements org.eris.messaging.Sender
         }
     }
 
-    @Override
+   private byte[] longToBytes(final long value)
+   {
+      ByteBuffer buffer = ByteBuffer.allocate(8);
+      buffer.putLong(value);
+      return buffer.array();
+   }
+
+   @Override
     public void offerCredits(int credits) throws org.eris.messaging.SenderException, org.eris.messaging.TransportException
     {
         checkPreConditions();
