@@ -34,10 +34,12 @@ import org.apache.qpid.proton.engine.Connection;
 import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Link;
+import org.apache.qpid.proton.engine.Receiver;
 import org.apache.qpid.proton.engine.Sasl;
 import org.apache.qpid.proton.engine.Sender;
 import org.apache.qpid.proton.engine.Session;
 import org.apache.qpid.proton.engine.Transport;
+import org.apache.qpid.proton.message.Message;
 import org.eris.logging.Logger;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Tracker;
@@ -70,7 +72,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
     private final Map<Session, SessionImpl> _sessionMap = new ConcurrentHashMap<Session, SessionImpl>();
 
     private final Object _lock = new Object();
-
+ 
     public ConnectionImpl(String url)
     {
 
@@ -238,43 +240,71 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         Delivery delivery = _connection.getWorkHead();
         while (delivery != null)
         {
-            // TODO this can be optimized?
-            if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
+            if (delivery.isUpdated())
             {
-                if (delivery.getRemoteState() != null)
+                processUpdate(delivery);
+            }
+            if (delivery.isReadable() && !delivery.isPartial())
+            {
+            	incomming(delivery);
+            }
+            Delivery next = delivery.getWorkNext();
+            delivery.clear();
+            delivery = next;
+        }
+    }
+
+    void incomming(Delivery delivery)
+    {
+    	Receiver receiver = (Receiver)delivery.getLink();
+    	int size = delivery.pending();
+        byte[] buffer = new byte[size];
+        int read = receiver.recv( buffer, 0, buffer.length );
+        if (read != size) {
+            // TODO need to handle this error
+        }
+        Message msg = Proton.message();
+        msg.decode(buffer, 0, read);
+        ((ReceiverImpl)receiver.getContext()).enqueue(new MessageImpl(msg));
+    }
+
+    void processUpdate(Delivery delivery)
+    {
+        if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
+        {
+            if (delivery.getRemoteState() != null)
+            {
+                delivery.disposition(delivery.getRemoteState());
+                TrackerImpl tracker = (TrackerImpl) delivery.getContext();
+                if (delivery.getRemoteState() instanceof Accepted)
                 {
-                    delivery.disposition(delivery.getRemoteState());
-                    TrackerImpl tracker = (TrackerImpl) delivery.getContext();
-                    if (delivery.getRemoteState() instanceof Accepted)
-                    {
-                        tracker.setState(TrackerState.ACCEPTED);
-                    }
-                    else if (delivery.getRemoteState() instanceof Rejected)
-                    {
-                        tracker.setState(TrackerState.REJECTED);
-                    }
-                    else if (delivery.getRemoteState() instanceof Released)
-                    {
-                        tracker.setState(TrackerState.RELEASED);
-                    }
-                    if (delivery.getLink().getRemoteReceiverSettleMode() == ReceiverSettleMode.SECOND)
-                    {
-                        if (tracker.isTerminalState())
-                        {
-                            delivery.settle();
-                            tracker.markSettled();
-                        }
-                    }
+                    tracker.setState(TrackerState.ACCEPTED);
                 }
-                if (delivery.remotelySettled())
+                else if (delivery.getRemoteState() instanceof Rejected)
                 {
-                    TrackerImpl tracker = (TrackerImpl) delivery.getContext();
-                    delivery.settle();
-                    tracker.markSettled();
+                    tracker.setState(TrackerState.REJECTED);
+                }
+                else if (delivery.getRemoteState() instanceof Released)
+                {
+                    tracker.setState(TrackerState.RELEASED);
+                }
+                if (delivery.getLink().getRemoteReceiverSettleMode() == ReceiverSettleMode.SECOND)
+                {
+                    if (tracker.isTerminalState())
+                    {
+                        delivery.settle();
+                        tracker.markSettled();
+                    }
                 }
             }
-            delivery = delivery.getWorkNext();
+            if (delivery.remotelySettled())
+            {
+                TrackerImpl tracker = (TrackerImpl) delivery.getContext();
+                delivery.settle();
+                tracker.markSettled();
+            }
         }
+
     }
 
     void processSessions()

@@ -34,9 +34,5 @@ public interface Receiver
 
     Message get(long timeout) throws TransportException, ReceiverException, TimeoutException;
 
-    Message fetch() throws TransportException, ReceiverException;
-
-    Message fetch(long timeout) throws TransportException, ReceiverException, TimeoutException;
-
     void setCapacity(int credits) throws TransportException, ReceiverException;
 }
