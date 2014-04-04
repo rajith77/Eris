@@ -265,7 +265,10 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         }
         Message msg = Proton.message();
         msg.decode(buffer, 0, read);
-        ((ReceiverImpl)receiver.getContext()).enqueue(new MessageImpl(msg));
+        ReceiverImpl recv = (ReceiverImpl)receiver.getContext();
+        String tag = String.valueOf(delivery.getTag());
+        recv.getSession().addUnsettled(tag, delivery);
+        recv.enqueue(new IncommingMessage(recv.getSession().getID(), tag, msg));
     }
 
     void processUpdate(Delivery delivery)

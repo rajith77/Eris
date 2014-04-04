@@ -17,7 +17,7 @@ public class MessageImpl implements org.eris.messaging.Message
 	private Message _msg;
 	private Object _content;
 	
-	public MessageImpl()
+	MessageImpl()
 	{
 		_msg = Proton.message();
 	}

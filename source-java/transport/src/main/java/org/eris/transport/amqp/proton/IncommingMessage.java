@@ -18,19 +18,30 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris.transport.amqp.proton;
 
-public interface Session
+import org.apache.qpid.proton.message.Message;
+
+public class IncommingMessage extends MessageImpl
 {
-    Sender createSender(String address, SenderMode mode) throws TransportException, SessionException, TimeoutException;
+    private String _ssnID;
 
-    Receiver createReceiver(String address, ReceiverMode mode) throws TransportException, SessionException, TimeoutException;
+    private String _deliveryTag;
 
-    void accept(Message msg) throws ReceiverException;
+    IncommingMessage(String ssnID, String deliveryTag, Message msg)
+    {
+        super(msg);
+        _ssnID = ssnID;
+        _deliveryTag = deliveryTag;
+    }
 
-    void reject(Message msg) throws ReceiverException;
+    String getSessionID()
+    {
+        return _ssnID;
+    }
 
-    void release(Message msg) throws ReceiverException;
-
-    void close() throws org.eris.messaging.TransportException;
+    String getDeliveryTag()
+    {
+        return _deliveryTag;
+    }
 }
