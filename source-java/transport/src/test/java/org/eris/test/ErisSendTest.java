@@ -13,12 +13,14 @@
 
 package org.eris.test;
 
+import org.eris.messaging.Connection;
+import org.eris.messaging.ConnectionSettings;
+import org.eris.messaging.Message;
+import org.eris.messaging.Messaging;
+import org.eris.messaging.Sender;
 import org.eris.messaging.SenderMode;
+import org.eris.messaging.Session;
 import org.eris.messaging.Tracker;
-import org.eris.transport.amqp.proton.ConnectionImpl;
-import org.eris.transport.amqp.proton.MessageImpl;
-import org.eris.transport.amqp.proton.SenderImpl;
-import org.eris.transport.amqp.proton.SessionImpl;
 import org.junit.Test;
 
 /**
@@ -31,12 +33,12 @@ public class ErisSendTest
    @Test
    public void testSend() throws Exception
    {
-      ConnectionImpl con = new ConnectionImpl(new org.eris.messaging.ConnectionSettings());
+      Connection con = Messaging.connection(new ConnectionSettings());
       con.connect();
 
-      SessionImpl ssn = (SessionImpl) con.createSession();
-      SenderImpl sender = (SenderImpl) ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);
-      MessageImpl msg = new MessageImpl();
+      Session ssn = con.createSession();
+      Sender sender = ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);
+      Message msg = Messaging.message();
       msg.setContent("Hello World");
       Tracker t = sender.send(msg);
       t.awaitSettlement();
