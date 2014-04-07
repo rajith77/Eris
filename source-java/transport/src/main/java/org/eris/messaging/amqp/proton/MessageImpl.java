@@ -1,4 +1,4 @@
-package org.eris.transport.amqp.proton;
+package org.eris.messaging.amqp.proton;
 
 import java.util.Map;
 

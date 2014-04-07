@@ -18,7 +18,7 @@
 * under the License.
 *
 */
-package org.eris.transport.amqp.proton;
+package org.eris.messaging.amqp.proton;
 
 import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;

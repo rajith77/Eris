@@ -20,7 +20,7 @@
  */
 package org.eris.messaging;
 
-import org.eris.transport.amqp.proton.MessagingImpl;
+import org.eris.messaging.amqp.proton.MessagingImpl;
 
 public class Messaging
 {

@@ -1,4 +1,4 @@
-package org.eris.transport.amqp.proton;
+package org.eris.messaging.amqp.proton;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
