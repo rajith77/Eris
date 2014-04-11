@@ -1,11 +1,17 @@
 package org.eris.messaging;
 
-public class ConnectionSettings
+public abstract class ConnectionSettings
 {
+    protected String _scheme = "amqp";
+    
     protected String _host = "localhost";
 
     protected int _port = 5672;
 
+    protected String _user = "";
+
+    protected String _pass = "";
+    
     protected boolean _tcpNodelay = false;
 
     protected int _readBufferSize = 65535;

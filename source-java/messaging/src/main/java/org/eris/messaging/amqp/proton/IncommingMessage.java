@@ -25,14 +25,15 @@ import org.apache.qpid.proton.message.Message;
 public class IncommingMessage extends MessageImpl
 {
     private String _ssnID;
-
     private String _deliveryTag;
-
-    IncommingMessage(String ssnID, String deliveryTag, Message msg)
+    private long _sequence;
+    
+    IncommingMessage(String ssnID, String deliveryTag, long sequence, Message msg)
     {
         super(msg);
         _ssnID = ssnID;
         _deliveryTag = deliveryTag;
+        _sequence = sequence;
     }
 
     String getSessionID()
@@ -43,5 +44,10 @@ public class IncommingMessage extends MessageImpl
     String getDeliveryTag()
     {
         return _deliveryTag;
+    }
+
+    long getSequence()
+    {
+        return _sequence;
     }
 }

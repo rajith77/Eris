@@ -20,25 +20,7 @@
  */
 package org.eris.messaging;
 
-public interface Receiver
+public interface CompletionListener
 {
-    String getAddress();
-
-    CreditMode getCreditMode();
-
-    int getCapacity();
-
-    int getAvailable();
-
-    int getUnsettled();
-
-    Message get() throws ReceiverException;
-
-    Message receive() throws TransportException, ReceiverException;
-
-    Message receive(long timeout) throws TransportException, ReceiverException, TimeoutException;
-
-    void setCapacity(int credits) throws TransportException, ReceiverException;
-
-    void setCreditMode(CreditMode creditMode) throws ReceiverException;
+    void completed(Tracker t);
 }

@@ -24,12 +24,14 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.amqp.messaging.Accepted;
 import org.apache.qpid.proton.amqp.messaging.Rejected;
 import org.apache.qpid.proton.amqp.messaging.Released;
 import org.apache.qpid.proton.amqp.transport.ReceiverSettleMode;
+import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
 import org.apache.qpid.proton.engine.Connection;
 import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.EndpointState;
@@ -41,12 +43,12 @@ import org.apache.qpid.proton.engine.Session;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.message.Message;
 import org.eris.logging.Logger;
+import org.eris.messaging.ReceiverMode;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Tracker;
 import org.eris.messaging.Tracker.TrackerState;
+import org.eris.threading.Threading;
 import org.eris.transport.TransportException;
-import org.eris.util.ConditionManager;
-import org.eris.util.ConditionManagerTimeoutException;
 
 public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, org.eris.messaging.Connection
 {
@@ -71,21 +73,26 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     private final Map<Session, SessionImpl> _sessionMap = new ConcurrentHashMap<Session, SessionImpl>();
 
+    private final LinkedBlockingQueue<TrackerImpl> _notificationQueue = new LinkedBlockingQueue<TrackerImpl>();
+
     private final Object _lock = new Object();
- 
+
+    private Thread _notificationThread = null;
+
     public ConnectionImpl(String url)
     {
-
+        this(new ConnectionSettingsImpl(url));        
     }
 
     public ConnectionImpl(String host, int port)
     {
-
+        this(new ConnectionSettingsImpl(host, port));
     }
 
     public ConnectionImpl(org.eris.messaging.ConnectionSettings settings)
     {
         _settings = settings;
+        setupNotifications();
     }
 
     @Override
@@ -96,7 +103,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         _connection.setContainer(UUID.randomUUID().toString());
         _connection.setHostname(_settings.getHost());
         _transport.bind(_connection);
-        doSasl(_transport.sasl());
+        //doSasl(_transport.sasl());
         _connection.open();
 
         try
@@ -136,18 +143,33 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
     public org.eris.messaging.Session createSession() throws org.eris.messaging.TransportException,
     org.eris.messaging.ConnectionException, org.eris.messaging.TimeoutException
     {
-        Session ssn = _connection.session();
-        SessionImpl session = new SessionImpl(this, ssn);
-        _sessionMap.put(ssn, session);
-        ssn.open();
-        write();
-        return session;
+        synchronized (_lock)
+        {
+            if (_state == State.DETACHED)
+            {
+                //wait on failover
+            }
+            else if (_state != State.ACTIVE)
+            {
+                throw new org.eris.messaging.ConnectionException("Connection is closed");
+            }
+            Session ssn = _connection.session();
+            SessionImpl session = new SessionImpl(this, ssn);
+            _sessionMap.put(ssn, session);
+            ssn.open();
+            write();
+            return session;
+        }
     }
 
     @Override
     public void close() throws org.eris.messaging.TransportException,
     org.eris.messaging.ConnectionException, org.eris.messaging.TimeoutException
     {
+        synchronized (_lock)
+        {
+            _state = State.CLOSED;
+        }
         _connection.close();
         write();
         //Should we wait until the remote end close the connection?
@@ -158,6 +180,19 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         catch (TransportException e)
         {
             throw new org.eris.messaging.TransportException("Error closing network connection",e);
+        }
+        _notificationThread.interrupt();
+        try
+        {
+            _notificationThread.join(getDefaultTimeout());
+        }
+        catch (InterruptedException e)
+        {
+            throw new org.eris.messaging.ConnectionException("Interrupted while waiting for notification thead to complete");
+        }
+        if (_notificationThread.isAlive())
+        {
+            throw new org.eris.messaging.TimeoutException("Time out while waiting for notification thread to complete");
         }
     }
 
@@ -240,13 +275,13 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         Delivery delivery = _connection.getWorkHead();
         while (delivery != null)
         {
+            if (delivery.isReadable() && !delivery.isPartial())
+            {
+                incomming(delivery);
+            }
             if (delivery.isUpdated())
             {
                 processUpdate(delivery);
-            }
-            if (delivery.isReadable() && !delivery.isPartial())
-            {
-            	incomming(delivery);
             }
             Delivery next = delivery.getWorkNext();
             delivery.clear();
@@ -256,8 +291,8 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     void incomming(Delivery delivery)
     {
-    	Receiver receiver = (Receiver)delivery.getLink();
-    	int size = delivery.pending();
+        Receiver receiver = (Receiver)delivery.getLink();
+        int size = delivery.pending();
         byte[] buffer = new byte[size];
         int read = receiver.recv( buffer, 0, buffer.length );
         if (read != size) {
@@ -267,47 +302,41 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         msg.decode(buffer, 0, read);
         ReceiverImpl recv = (ReceiverImpl)receiver.getContext();
         String tag = String.valueOf(delivery.getTag());
-        recv.getSession().addUnsettled(tag, delivery);
-        recv.enqueue(new IncommingMessage(recv.getSession().getID(), tag, msg));
+        long sequence = recv.getSession().getNextIncommingSequence();
+        recv.getSession().addUnsettled(sequence, delivery);
+        recv.enqueue(new IncommingMessage(recv.getSession().getID(), tag, sequence, msg));
     }
 
     void processUpdate(Delivery delivery)
     {
-        if (delivery.isUpdated() && delivery.getLink() instanceof Sender)
+        Link link = delivery.getLink(); 
+        if (link instanceof Sender)
         {
             if (delivery.getRemoteState() != null)
             {
                 delivery.disposition(delivery.getRemoteState());
                 TrackerImpl tracker = (TrackerImpl) delivery.getContext();
-                if (delivery.getRemoteState() instanceof Accepted)
-                {
-                    tracker.setState(TrackerState.ACCEPTED);
-                }
-                else if (delivery.getRemoteState() instanceof Rejected)
-                {
-                    tracker.setState(TrackerState.REJECTED);
-                }
-                else if (delivery.getRemoteState() instanceof Released)
-                {
-                    tracker.setState(TrackerState.RELEASED);
-                }
-                if (delivery.getLink().getRemoteReceiverSettleMode() == ReceiverSettleMode.SECOND)
-                {
-                    if (tracker.isTerminalState())
-                    {
-                        delivery.settle();
-                        tracker.markSettled();
-                    }
-                }
+                tracker.update(delivery.getRemoteState());
             }
-            if (delivery.remotelySettled())
+            if (delivery.remotelySettled() && link.getSenderSettleMode() == SenderSettleMode.UNSETTLED)
             {
                 TrackerImpl tracker = (TrackerImpl) delivery.getContext();
                 delivery.settle();
                 tracker.markSettled();
+                if (tracker.getSession().getCompletionListener() != null)
+                {
+                    _notificationQueue.add(tracker);
+                }
             }
         }
-
+        else
+        {
+            if (delivery.remotelySettled() && link.getReceiverSettleMode() == ReceiverSettleMode.SECOND)
+            {
+                delivery.settle();
+                ((ReceiverImpl)link.getContext()).decrementUnsettledCount();
+            }
+        }
     }
 
     void processSessions()
@@ -343,17 +372,72 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         return _settings.getConnectTimeout();
     }
 
+    void setupNotifications()
+    {
+        try
+        {
+            _notificationThread = Threading.getThreadFactory().createThread(
+                    new Runnable () {
+
+                        @Override
+                        public void run()
+                        {
+                            while(_state != State.CLOSED)
+                            {
+                                try
+                                {
+                                    TrackerImpl t = _notificationQueue.take();
+                                    if (t.getSession().getCompletionListener() != null)
+                                    {
+                                        t.getSession().getCompletionListener().completed(t);
+                                    }
+                                }
+                                catch (InterruptedException e)
+                                {
+                                    //ignore
+                                }
+                                catch (NullPointerException e)
+                                {
+                                    // There is always a chance of completion listener being set to null
+                                    // btw the check and the time it's being called.
+                                }
+                            }
+                        }
+
+                    });
+            //_notificationThread.setName(name);
+            _notificationThread.start();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error creating Notification thread",e);
+        }
+    }
+
     public static void main(String[] args) throws Exception
     {
-        ConnectionImpl con = new ConnectionImpl(new org.eris.messaging.ConnectionSettings());
+        ConnectionImpl con = new ConnectionImpl("localhost", 5672);
         con.connect();
-
         SessionImpl ssn = (SessionImpl) con.createSession();
+        ssn.setCompletionListener(new org.eris.messaging.CompletionListener(){
+
+            @Override
+            public void completed(Tracker t)
+            {
+                System.out.println("Got notified of message completion");
+                
+            }});
+
         SenderImpl sender = (SenderImpl) ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);
         MessageImpl msg = new MessageImpl();
         msg.setContent("Hello World");
         Tracker t = sender.send(msg);
         t.awaitSettlement();
+
+        ReceiverImpl receiver = (ReceiverImpl) ssn.createReceiver("mybox",ReceiverMode.AT_LEAST_ONCE);
+        msg = (MessageImpl)receiver.receive();
+        ssn.accept(msg);
+        System.out.println("Msg : " + msg.getContent());
         con.close();
     }
 }

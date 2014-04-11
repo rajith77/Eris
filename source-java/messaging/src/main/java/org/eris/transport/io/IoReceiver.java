@@ -62,7 +62,6 @@ final class IoReceiver implements Runnable
 
        try
        {
-           //Create but deliberately don't start the thread.
            receiverThread = Threading.getThreadFactory().createThread(this);
        }
        catch(Exception e)

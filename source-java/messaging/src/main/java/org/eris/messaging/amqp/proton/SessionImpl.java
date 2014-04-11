@@ -39,8 +39,11 @@ import org.apache.qpid.proton.engine.Link;
 import org.apache.qpid.proton.engine.Sender;
 import org.apache.qpid.proton.engine.Receiver;
 import org.apache.qpid.proton.engine.Session;
+import org.eris.messaging.CompletionListener;
+import org.eris.messaging.CreditMode;
 import org.eris.messaging.ReceiverMode;
 import org.eris.messaging.SenderMode;
+import org.eris.messaging.SessionException;
 
 public class SessionImpl implements org.eris.messaging.Session
 {
@@ -51,9 +54,11 @@ public class SessionImpl implements org.eris.messaging.Session
     private ConnectionImpl _conn;
     private Session _session;
     private AtomicLong _deliveryTag = new AtomicLong(0);
+    private AtomicLong _incommingSequence = new AtomicLong(0);
+    private CompletionListener _completionListener = null;
     private final Map<Sender, SenderImpl> _senders = new ConcurrentHashMap<Sender, SenderImpl>(2);
     private final Map<Receiver, ReceiverImpl> _receivers = new ConcurrentHashMap<Receiver, ReceiverImpl>(2);
-    private final Map<String, Delivery> _unsettled = new ConcurrentHashMap<String, Delivery>();	
+    private final Map<Long, Delivery> _unsettled = new ConcurrentHashMap<Long, Delivery>();	
     private final String _id;
 
     SessionImpl(ConnectionImpl conn, Session ssn)
@@ -85,7 +90,13 @@ public class SessionImpl implements org.eris.messaging.Session
     }
 
     @Override
-    public org.eris.messaging.Receiver createReceiver(String address, ReceiverMode mode) throws org.eris.messaging.TransportException, org.eris.messaging.SessionException, org.eris.messaging.TimeoutException
+    public org.eris.messaging.Receiver createReceiver(String address, ReceiverMode mode) throws org.eris.messaging.TransportException, org.eris.messaging.SessionException, org.eris.messaging.ReceiverException, org.eris.messaging.TimeoutException
+    {
+        return createReceiver(address, mode, CreditMode.AUTO);
+    }
+
+    @Override
+    public org.eris.messaging.Receiver createReceiver(String address, ReceiverMode mode, CreditMode creditMode) throws org.eris.messaging.TransportException, org.eris.messaging.SessionException, org.eris.messaging.ReceiverException, org.eris.messaging.TimeoutException
     {
         checkPreConditions();
         Receiver receiver = _session.receiver(address);
@@ -109,10 +120,10 @@ public class SessionImpl implements org.eris.messaging.Session
             receiver.setReceiverSettleMode(ReceiverSettleMode.SECOND);
             receiver.setSenderSettleMode(SenderSettleMode.UNSETTLED);
             break;
-        }        
+        }
         receiver.open();
 
-        ReceiverImpl receiverImpl = new ReceiverImpl(address,this,receiver);
+        ReceiverImpl receiverImpl = new ReceiverImpl(address,this,receiver,creditMode);
         _receivers.put(receiver, receiverImpl);
         receiver.setContext(receiverImpl);
         _conn.write();
@@ -120,21 +131,33 @@ public class SessionImpl implements org.eris.messaging.Session
     }
 
     @Override
-    public void accept(org.eris.messaging.Message msg) throws org.eris.messaging.ReceiverException
+    public void accept(org.eris.messaging.Message msg, int ... flags) throws org.eris.messaging.ReceiverException
     {
         setDispositionAndSettleIfRequired(convertMessage(msg), ACCEPTED);
     }
 
     @Override
-    public void reject(org.eris.messaging.Message msg) throws org.eris.messaging.ReceiverException
+    public void reject(org.eris.messaging.Message msg, int ... flags) throws org.eris.messaging.ReceiverException
     {
         setDispositionAndSettleIfRequired(convertMessage(msg), REJECTED);
     }
 
     @Override
-    public void release(org.eris.messaging.Message msg) throws org.eris.messaging.ReceiverException
+    public void release(org.eris.messaging.Message msg, int ... flags) throws org.eris.messaging.ReceiverException
     {
         setDispositionAndSettleIfRequired(convertMessage(msg), RELEASED);
+    }
+
+    @Override
+    public void close() throws org.eris.messaging.TransportException
+    {
+        _conn.closeSession(_session);
+    }
+
+    @Override
+    public void setCompletionListener(CompletionListener l) throws org.eris.messaging.SessionException
+    {
+        _completionListener = l;
     }
 
     IncommingMessage convertMessage(org.eris.messaging.Message msg) throws org.eris.messaging.ReceiverException
@@ -156,23 +179,23 @@ public class SessionImpl implements org.eris.messaging.Session
 
     void setDispositionAndSettleIfRequired(IncommingMessage msg, DeliveryState state)
     {
-        Delivery d = _unsettled.get(msg.getDeliveryTag());
+        Delivery d = _unsettled.get(msg.getSequence());
         d.disposition(state);
         if (d.getLink().getReceiverSettleMode() == ReceiverSettleMode.FIRST)
         {
             d.settle();
+            ((ReceiverImpl)d.getLink().getContext()).decrementUnsettledCount();
         }
-    }
-
-    @Override
-    public void close() throws org.eris.messaging.TransportException
-    {
-        _conn.closeSession(_session);
     }
 
     long getNextDeliveryTag()
     {
         return _deliveryTag.incrementAndGet();
+    }
+
+    long getNextIncommingSequence()
+    {
+        return _incommingSequence.incrementAndGet();
     }
 
     ConnectionImpl getConnection()
@@ -212,8 +235,13 @@ public class SessionImpl implements org.eris.messaging.Session
         return _id;
     }
 
-    void addUnsettled(String id, Delivery d)
+    void addUnsettled(long id, Delivery d)
     {
         _unsettled.put(id, d);
+    }
+
+    CompletionListener getCompletionListener()
+    {
+        return _completionListener;
     }
 }

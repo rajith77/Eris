@@ -22,15 +22,21 @@ package org.eris.messaging;
 
 public interface Session
 {
+    static final int CUMULATIVE = 0x01;
+
     Sender createSender(String address, SenderMode mode) throws TransportException, SessionException, TimeoutException;
 
-    Receiver createReceiver(String address, ReceiverMode mode) throws TransportException, SessionException, TimeoutException;
+    Receiver createReceiver(String address, ReceiverMode mode) throws TransportException, SessionException, ReceiverException, TimeoutException;
 
-    void accept(Message msg) throws ReceiverException;
+    Receiver createReceiver(String address, ReceiverMode mode, CreditMode creditMode) throws TransportException, SessionException, ReceiverException, TimeoutException;
 
-    void reject(Message msg) throws ReceiverException;
+    void accept(Message msg, int ... flags) throws ReceiverException;
 
-    void release(Message msg) throws ReceiverException;
+    void reject(Message msg, int ... flags) throws ReceiverException;
+
+    void release(Message msg, int ... flags) throws ReceiverException;
+
+    void setCompletionListener(CompletionListener l) throws SessionException;
 
     void close() throws org.eris.messaging.TransportException;
 }

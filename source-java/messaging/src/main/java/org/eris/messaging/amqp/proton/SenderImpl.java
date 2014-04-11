@@ -60,7 +60,7 @@ public class SenderImpl implements org.eris.messaging.Sender
 		{
 			byte[] tag = longToBytes(_ssn.getNextDeliveryTag());
 			Delivery delivery = _sender.delivery(tag);
-			TrackerImpl tracker = new TrackerImpl();
+			TrackerImpl tracker = new TrackerImpl(_ssn);
 			delivery.setContext(tracker);
 			if (_sender.getSenderSettleMode() == SenderSettleMode.SETTLED)
 			{
