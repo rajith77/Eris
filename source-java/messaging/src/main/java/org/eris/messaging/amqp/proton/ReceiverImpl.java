@@ -7,20 +7,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Receiver;
 import org.eris.messaging.CreditMode;
-import org.eris.messaging.ReceiverException;
 
 public class ReceiverImpl implements org.eris.messaging.Receiver
 {
     private String _address;
+
     private SessionImpl _ssn;
+
     private Receiver _receiver;
-    private int _capacity = Integer.getInteger("eris.consumer.capacity", 1);
+
+    private int _capacity = Integer.getInteger("eris.receiver.capacity", 1);
+
     private CreditMode _creditMode;
+
     private LinkedBlockingQueue<org.eris.messaging.Message> _queue;
+
     private AtomicInteger _unsettled = new AtomicInteger(0);
 
-    ReceiverImpl(String address, SessionImpl ssn, Receiver receiver, CreditMode creditMode) throws org.eris.messaging.ReceiverException, org.eris.messaging.TransportException
-    {
+    ReceiverImpl(String address, SessionImpl ssn, Receiver receiver, CreditMode creditMode)
+            throws org.eris.messaging.TransportException
+            {
         _address = address;
         _ssn = ssn;
         _receiver = receiver;
@@ -28,9 +34,13 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
         _creditMode = creditMode;
         if (_creditMode == CreditMode.AUTO && _capacity > 0)
         {
-            issueCredits(_capacity);
+            issueCredits(_capacity, false);
         }
-    }
+        else
+        {
+            _capacity = 0;
+        }
+            }
 
     @Override
     public String getAddress()
@@ -63,14 +73,8 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
     }
 
     @Override
-    public org.eris.messaging.Message get() throws org.eris.messaging.ReceiverException
-    {
-        checkClosed();
-        return _queue.poll();
-    }
-
-    @Override
-    public org.eris.messaging.Message receive() throws org.eris.messaging.TransportException, org.eris.messaging.ReceiverException
+    public org.eris.messaging.Message receive() throws org.eris.messaging.TransportException,
+    org.eris.messaging.ReceiverException
     {
         try
         {
@@ -78,15 +82,22 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
         }
         catch (org.eris.messaging.TimeoutException e)
         {
-            // Only to get it compiling. This exception will never be thrown when the timeout == 0.
+            // Only to get it compiling. This exception will never be thrown
+            // when the timeout == 0.
             return null;
         }
     }
 
     @Override
-    public org.eris.messaging.Message receive(long timeout) throws org.eris.messaging.TransportException, org.eris.messaging.ReceiverException, org.eris.messaging.TimeoutException
+    public org.eris.messaging.Message receive(long timeout) throws org.eris.messaging.TransportException,
+    org.eris.messaging.ReceiverException, org.eris.messaging.TimeoutException
     {
-        checkClosed();        
+        checkClosed();
+        if (_creditMode == CreditMode.EXPLICT && _capacity == 0)
+        {
+            throw new org.eris.messaging.ReceiverException(
+                    "Since CreditMode is EXPLICIT, you need to explicity set the capacity before calling receive");
+        }
         issuePreReceiveCredit();
         org.eris.messaging.Message msg = null;
         try
@@ -112,6 +123,7 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
         }
         else
         {
+            checkClosed();
             if (timeout == 0)
             {
                 throw new org.eris.messaging.ReceiverException("Receive operation was interrupted");
@@ -124,18 +136,30 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
     }
 
     @Override
-    public void setCapacity(int credits) throws org.eris.messaging.TransportException, org.eris.messaging.ReceiverException
+    public void setCapacity(int credits) throws org.eris.messaging.TransportException,
+    org.eris.messaging.ReceiverException
     {
         checkClosed();
+        if (credits < 0)
+        {
+            throw new org.eris.messaging.ReceiverException("Capacity cannot be negative");
+        }
+        else if (_creditMode == CreditMode.EXPLICT && credits == 0)
+        {
+            throw new org.eris.messaging.ReceiverException("When CreditMode is EXPLICIT, capacity cannot be zero");
+        }
         _capacity = credits;
-        // Need to cancel previous credits.
-        issueCredits(credits);
+        cancelPrevCredits();
+        if (_capacity > 0)
+        {
+            issueCredits(credits, false);
+        }
     }
 
     @Override
-    public void setCreditMode(CreditMode creditMode) throws ReceiverException
+    public void close() throws org.eris.messaging.TransportException
     {
-        _creditMode = creditMode;
+        _ssn.closeLink(_receiver);
     }
 
     void checkClosed() throws org.eris.messaging.ReceiverException
@@ -168,7 +192,7 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
     {
         if (_creditMode == CreditMode.AUTO && _capacity == 0 && _queue.isEmpty())
         {
-            issueCredits(1);                
+            issueCredits(1, true);
         }
     }
 
@@ -178,17 +202,27 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
         {
             if (_capacity == 1)
             {
-                issueCredits(1);
+                issueCredits(1, false);
             }
-            else if (_unsettled.get() < _capacity/2 )
+            else if (_unsettled.get() < _capacity / 2)
             {
-                issueCredits(_capacity - _unsettled.get());
-            }                
+                issueCredits(_capacity - _unsettled.get(), false);
+            }
         }
     }
 
-    void issueCredits(int credits) throws org.eris.messaging.TransportException
+    void cancelPrevCredits() throws org.eris.messaging.TransportException
     {
+        _receiver.flow(0);
+        _ssn.write();
+    }
+
+    void issueCredits(int credits, boolean drain) throws org.eris.messaging.TransportException
+    {
+        if (drain)
+        {
+            _receiver.setDrain(true);
+        }
         _receiver.flow(credits);
         _ssn.write();
     }

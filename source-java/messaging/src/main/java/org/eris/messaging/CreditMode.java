@@ -20,6 +20,21 @@
  */
 package org.eris.messaging;
 
+/**
+ * <h3>CreditMode</h3> <br>
+ * Determines how and when message credits are issued.
+ * 
+ * If the CreditMode is {@link CreditMode#AUTO}, the application only needs to
+ * set the capacity once and library will automatically replenish credits when a
+ * certain number of messages are marked as either accepted, rejected or
+ * released. The library will determine the optimum threshold for when the
+ * re-issue happens. <br>
+ * 
+ * If the CreditMode is {@link CreditMode#EXPLICT}, the application needs to
+ * explicitly manage it's message credit and use
+ * {@link Receiver#setCapacity(int)} to issue credits when it is ready to
+ * process more messages.
+ */
 public enum CreditMode
 {
     EXPLICT, AUTO;

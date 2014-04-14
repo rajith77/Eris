@@ -4,18 +4,17 @@
 
   <parent>
 
-     <groupId>org.proton.eris</groupId>
-     <artifactId>erisJava</artifactId>
+     <groupId>org.eris</groupId>
+     <artifactId>eris</artifactId>
      <version>1.0-SNAPSHOT</version>
-
   </parent>
 
-  <groupId>org.proton.eris</groupId>
-  <artifactId>transport</artifactId>
+  <groupId>org.eris</groupId>
+  <artifactId>messaging</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>transport</name>
+  <name>messaging</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -29,7 +28,7 @@
       <scope>test</scope>
     </dependency>
       <dependency>
-        <groupId>org.proton.eris</groupId>
+        <groupId>org.eris</groupId>
         <artifactId>util</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -38,11 +37,14 @@
          <groupId>org.apache.qpid</groupId>
          <artifactId>proton-api</artifactId>
       </dependency>
+
       <dependency>
          <groupId>org.apache.qpid</groupId>
-         <artifactId>proton-jms</artifactId>
+         <artifactId>proton-j-impl</artifactId>
+         <version>0.6</version>
       </dependency>
-
+     
+ 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>

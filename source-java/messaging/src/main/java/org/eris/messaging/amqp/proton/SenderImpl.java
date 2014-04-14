@@ -65,7 +65,6 @@ public class SenderImpl implements org.eris.messaging.Sender
 			if (_sender.getSenderSettleMode() == SenderSettleMode.SETTLED)
 			{
 				delivery.settle();
-				//tracker.setState();
 				tracker.markSettled();
 			}
 

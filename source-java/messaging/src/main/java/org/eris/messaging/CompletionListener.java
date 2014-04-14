@@ -20,6 +20,11 @@
  */
 package org.eris.messaging;
 
+/**
+ * Provides a mechanism for receiving message delivery completions
+ * asynchronously. The {@link Tracker} provided can be used to determine if the
+ * remote peer has accepted, rejected or released the message.
+ */
 public interface CompletionListener
 {
     void completed(Tracker t);

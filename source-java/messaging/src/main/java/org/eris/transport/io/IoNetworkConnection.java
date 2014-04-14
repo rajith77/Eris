@@ -50,7 +50,7 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
         try
         {
             InetAddress address = InetAddress.getByName(_settings.getHost());
-            _socket.connect(new InetSocketAddress(address, _settings.getPort()), _settings.getConnectTimeout());
+            _socket.connect(new InetSocketAddress(address, _settings.getPort()), (int)_settings.getConnectTimeout());
         }
         catch (UnknownHostException e)
         {

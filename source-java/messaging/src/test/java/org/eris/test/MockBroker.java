@@ -38,7 +38,7 @@ public class MockBroker
     private static final EnumSet<EndpointState> ANY = EnumSet.allOf(EndpointState.class);
 
     private static Accepted ACCEPTED = new Accepted();
-  
+
     private Driver _driver;
 
     private Listener<State> _listener;
@@ -55,7 +55,7 @@ public class MockBroker
 
     public void doWait()
     {
-        _driver.doWait(0);
+        _driver.doWait(-1);
     }
 
     public void acceptConnections()
@@ -65,6 +65,9 @@ public class MockBroker
         {
             System.out.println("Accepting Connection.");
             Connector<State> ctor = _listener.accept();
+            Connection connection = Proton.connection();
+            connection.setContainer("MockBroker");
+            ctor.setConnection(connection);
             Sasl sasl = ctor.sasl();
             sasl.server();
             sasl.setMechanisms(new String[] { "ANONYMOUS" });
@@ -97,6 +100,10 @@ public class MockBroker
     private void serviceConnector(Connector<State> ctor) throws Exception
     {
         Connection con = ctor.getConnection();
+        if (con == null)
+        {
+            return;
+        }
 
         // Step 1: setup the engine's connection, and any sessions and links
         // that may be pending.

@@ -17,7 +17,7 @@ public class TrackerImpl implements org.eris.messaging.Tracker
     TrackerImpl(SessionImpl ssn)
     {
         _ssn = ssn;
-        _state = TrackerState.PENDING;
+        _state = TrackerState.UNKNOWN;
     }
 
     void setState(TrackerState state)
@@ -46,7 +46,7 @@ public class TrackerImpl implements org.eris.messaging.Tracker
             setState(TrackerState.RELEASED);
         }
     }
-    
+
     boolean isTerminalState()
     {
         switch (_state)
@@ -54,7 +54,6 @@ public class TrackerImpl implements org.eris.messaging.Tracker
         case ACCEPTED:
         case REJECTED:
         case RELEASED:
-        case FAILED:
             return true;
         default:
             return false;

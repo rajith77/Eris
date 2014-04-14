@@ -20,11 +20,36 @@
  */
 package org.eris.messaging;
 
+/**
+ * 
+ *  Represents a logical Connection to a remote peer within a messaging network.
+ *  
+ *  <h3>Exceptions</h3>
+ *  TransportException  : Thrown when the underlying transport fails.
+ *  ConnectionException : Thrown when the Connection gets to an erroneous state.
+ *  TimeoutException    : Thrown when an operation exceeds the connection timeout.
+ *  
+ *  Connection timeout defaults to 60 secs.
+ *  This value can be changed via the "eris.connection.timeout" system property, or
+ *  by providing an application specific ConnectionSettings implementation when creating
+ *  the Connection object.
+ *  @see ConnectionSettings
+ */
 public interface Connection
 {
+    /** 
+     * Creates the underlying physical connection to the peer.
+     */
     public void connect() throws TransportException, ConnectionException, TimeoutException;
 
+    /** 
+     * Establishes a logical Session for exchanging of messages.
+     */
     public Session createSession() throws TransportException, ConnectionException, TimeoutException;
 
+    /** 
+     * Terminates the Connection and free any resources associated with this Connection.
+     * If there are any active sessions, it will close them first before closing the Connection.
+     */
     public void close() throws TransportException, ConnectionException, TimeoutException;
 }

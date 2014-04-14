@@ -18,7 +18,7 @@ public abstract class ConnectionSettings
 
     protected int _writeBufferSize = 65535;
 
-    protected int _connectTimeout = 60000;
+    protected long _connectTimeout = Long.getLong("eris.connection.timeout",60000);
 
     protected long _idleTimeout = 60000;
 
@@ -47,7 +47,7 @@ public abstract class ConnectionSettings
         return _writeBufferSize;
     }
 
-    public int getConnectTimeout()
+    public long getConnectTimeout()
     {
         return _connectTimeout;
     }

@@ -20,23 +20,110 @@
  */
 package org.eris.messaging;
 
+/**
+ * 
+ * Represents a logical Session for exchanging of messages.
+ * 
+ * <h3>Exceptions</h3> <br>
+ * TransportException : Thrown when the underlying transport fails. <br>
+ * SessionException   : Thrown when the Session gets to an erroneous state.
+ */
 public interface Session
 {
+    /**
+     * Flag for use with reject(), accept() and release(). When used with the
+     * above methods, all messages upto that point will be affected by the given
+     * action.
+     * 
+     * @see accept()
+     * @see reject()
+     * @see release()
+     */
     static final int CUMULATIVE = 0x01;
 
-    Sender createSender(String address, SenderMode mode) throws TransportException, SessionException, TimeoutException;
+    /**
+     * Establishes a logical Link with the remote peer for sending messages to
+     * the specified address.
+     * 
+     * @param address
+     *            The address is an arbitrary string identifying a logical
+     *            "destination" within the remote peer, which is capable of
+     *            receiving the messages.
+     * @param mode
+     *            The SenderMode specifies the level of reliability expected by
+     *            the application.
+     * @see SenderMode
+     */
+    Sender createSender(String address, SenderMode mode) throws TransportException, SessionException;
 
-    Receiver createReceiver(String address, ReceiverMode mode) throws TransportException, SessionException, ReceiverException, TimeoutException;
+    /**
+     * Establishes a logical Link with the remote peer for receiving messages
+     * from the specified address.
+     * 
+     * @param address
+     *            The address is an arbitrary string identifying a logical
+     *            "message source" within the remote peer
+     * @param mode
+     *            The ReceiverMode specifies the level of reliability expected
+     *            by the application.
+     * @see ReceiverMode
+     */
+    Receiver createReceiver(String address, ReceiverMode mode) throws TransportException, SessionException;
 
-    Receiver createReceiver(String address, ReceiverMode mode, CreditMode creditMode) throws TransportException, SessionException, ReceiverException, TimeoutException;
+    /**
+     * Establishes a logical Link with the remote peer for receiving messages
+     * from the specified address.
+     * 
+     * @param address
+     *            The address is an arbitrary string identifying a logical
+     *            "message source" within the remote peer
+     * @param mode
+     *            The ReceiverMode specifies the level of reliability expected
+     *            by the application.
+     * @param creditMode
+     *            The CreditMode specifies how credit is replenished.
+     * @see ReceiverMode
+     * @see CreditMode
+     */
+    Receiver createReceiver(String address, ReceiverMode mode, CreditMode creditMode) throws TransportException,
+            SessionException;
 
-    void accept(Message msg, int ... flags) throws ReceiverException;
+    /**
+     * Accepts the given message or all messages upto that point if the
+     * CUMULATIVE flag is used.
+     * 
+     * @see CUMULATIVE
+     */
+    void accept(Message msg, int... flags) throws SessionException;
 
-    void reject(Message msg, int ... flags) throws ReceiverException;
+    /**
+     * Rejects the given message or all messages upto that point if the
+     * CUMULATIVE flag is used.
+     * 
+     * @see CUMULATIVE
+     */
+    void reject(Message msg, int... flags) throws SessionException;
 
-    void release(Message msg, int ... flags) throws ReceiverException;
+    /**
+     * Release the given message or all messages upto that point if the
+     * CUMULATIVE flag is used.
+     * 
+     * @see CUMULATIVE
+     */
+    void release(Message msg, int... flags) throws SessionException;
 
+    /**
+     * The {@link CompletionListener} provides a way to receive message completions
+     * asynchronously.
+     * 
+     * @see CompletionListener
+     */
     void setCompletionListener(CompletionListener l) throws SessionException;
 
-    void close() throws org.eris.messaging.TransportException;
+    /**
+     * Terminates the Session and free any resources associated with this
+     * Session. If there are any active Links, it will close them first before
+     * closing the Session.
+     */
+    void close() throws TransportException;
 }

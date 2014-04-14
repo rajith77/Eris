@@ -27,9 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.qpid.proton.Proton;
-import org.apache.qpid.proton.amqp.messaging.Accepted;
-import org.apache.qpid.proton.amqp.messaging.Rejected;
-import org.apache.qpid.proton.amqp.messaging.Released;
 import org.apache.qpid.proton.amqp.transport.ReceiverSettleMode;
 import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
 import org.apache.qpid.proton.engine.Connection;
@@ -46,7 +43,6 @@ import org.eris.logging.Logger;
 import org.eris.messaging.ReceiverMode;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Tracker;
-import org.eris.messaging.Tracker.TrackerState;
 import org.eris.threading.Threading;
 import org.eris.transport.TransportException;
 
@@ -425,7 +421,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
             public void completed(Tracker t)
             {
                 System.out.println("Got notified of message completion");
-                
+
             }});
 
         SenderImpl sender = (SenderImpl) ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);

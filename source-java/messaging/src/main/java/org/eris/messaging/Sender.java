@@ -20,15 +20,75 @@
  */
 package org.eris.messaging;
 
+/**
+ * Represents a logical <i>Link</i> for sending messages to a destination within
+ * the remote peer.
+ * 
+ * <h3>Creating message to send</h3> The application can use
+ * {@link Messaging#message()} to create a message that can be used or sending.
+ * To set the content use {@link Message#setContent(Object)}.
+ * 
+ * <h3>Tracking message delivery</h3> If the SenderMode is
+ * {@link SenderMode#AT_LEAST_ONCE} the application has two options for tracking
+ * messages.
+ * <ul>
+ * <li>Synchronously track messages by using {@link Tracker#awaitSettlement()}
+ * 
+ * <pre>
+ * Ex:  
+ *         {@code sender.send(msg).awaitSettlement();} or <br>
+ *         {@code         
+ *         Tracker tracker = sender.send(msg);
+ *         .....
+ *         tracker.awaitSettlement();
+ *         }
+ * </pre>
+ * 
+ * </li>
+ * <li>Receive completions asynchronously by registering a
+ * {@link CompletionListener} with the Session using
+ * {@link Session#setCompletionListener(CompletionListener)}</li>
+ * </ul>
+ */
 public interface Sender
 {
+    /**
+     * The address used for establishing the Link
+     */
     String getAddress();
 
+    /**
+     * Provides a hint to the peer about the availability of messages.
+     */
     void offerCredits(int credits) throws SenderException, TransportException;
 
+    /**
+     * Outstanding messages deliveries that the peer has not yet confirmed as
+     * settled.
+     */
     int getUnsettled() throws SenderException, TransportException;
 
+    /**
+     * 
+     * @param {@link Message} to be sent. The application can use
+     *        {@link Messaging#message()} to create a message that can be used
+     *        for sending.
+     * 
+     * @return A {@link Tracker} object that can be used to track the status of
+     *         the message delivery.
+     * 
+     * @throws ReceiverException
+     *             A ReceiverException will be thrown if the Sender was closed
+     *             due to an error.
+     * 
+     * @throws TransportException
+     *             A TransportException will be thrown if the underlying
+     *             transport fails during the send.
+     */
     Tracker send(Message msg) throws SenderException, TransportException;
 
+    /**
+     * Close the Link and free any resources associated with it.
+     */
     void close() throws TransportException;
 }
