@@ -44,4 +44,16 @@
       </dependency>
   </dependencies>
   </dependencyManagement>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>          
+          <excludePackageNames>org.eris.transport*:org.eris.messaging.amqp.*:*.util.*</excludePackageNames>          
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

@@ -21,18 +21,38 @@
 package org.eris.messaging;
 
 /**
- * Thrown when the Sender gets to an erroneous state.
+ * Outgoing message-delivery state
  */
-@SuppressWarnings("serial")
-public class SenderException extends MessagingException
+public enum TrackerState
 {
-    public SenderException(String msg)
-    {
-        super(msg);
-    }
+    /**
+     * Message has been accepted by the remote peer.
+     */
+    ACCEPTED,
 
-    public SenderException(String msg, Throwable t)
-    {
-        super(msg, t);
-    }
+    /**
+     * Message has been rejected by the remote peer.
+     */
+    REJECTED,
+
+    /**
+     * Message has been released by the remote peer.
+     */
+    RELEASED,
+
+    /**
+     * Delivery is still pending and the state is not known.
+     */
+    UNKNOWN,
+
+    /**
+     * The link has failed and the message is in-doubt.
+     */
+    LINK_FAILED,
+
+    /**
+     * The application or the remote peer has closed the link. The state of
+     * the delivery is unknown.
+     */
+    LINK_CLOSED
 }

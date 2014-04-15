@@ -21,8 +21,7 @@
 package org.eris.messaging;
 
 /**
- * <h3>CreditMode</h3> <br>
- * Determines how and when message credits are issued.
+ * Determines how and when message credits are issued. 
  * 
  * If the CreditMode is {@link CreditMode#AUTO}, the application only needs to
  * set the capacity once and library will automatically replenish credits when a

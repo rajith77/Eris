@@ -20,18 +20,19 @@
  */
 package org.eris.messaging;
 
+import org.eris.messaging.amqp.proton.MessagingImpl;
+
 /**
- * 
  * Provides an entry point for using the messaging library.
  * It provides several methods for obtaining a connection which can then
  * be used to create the appropriate constructs to send and receive messages.
  * 
- * It also acts as a factory for Message objects @see #message().
+ * It also acts as a factory for Message objects.
  * 
- * <h3>Connection URL Syntax</h3>
+ * <h4>Connection URL Syntax</h4>
  *
  *  The URL has the following form:
- *
+ *<pre>
  *    [ amqp[s]:// ] [user[:password]@] domain]
  *
  *  Where domain can be one of:
@@ -47,15 +48,13 @@ package org.eris.messaging;
  *   - amqps://fred:trustno1@example.org
  *   - 127.0.0.1:1234
  *   - amqps://127.0.0.1:1234
- *   
+ *</pre> 
  */
-import org.eris.messaging.amqp.proton.MessagingImpl;
-
 public class Messaging
 {
     private Messaging() {}
     /**
-     * Provides a concrete instance of the Message object that can be used for sending.
+     * Provides a concrete instance of the Message interface that can be used for sending.
      * @see Message
      */
     public static Message message()
@@ -64,7 +63,7 @@ public class Messaging
     }
 
     /**
-     * Constructs a Connection object with the given URL
+     * Constructs a Connection object with the given URL. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
      * @see Connection#connect()
@@ -75,7 +74,7 @@ public class Messaging
     }
 
     /**
-     * Constructs a Connection object with the given host and port
+     * Constructs a Connection object with the given host and port. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
      * @see Connection#connect()

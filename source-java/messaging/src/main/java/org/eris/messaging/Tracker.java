@@ -25,40 +25,6 @@ package org.eris.messaging;
  */
 public interface Tracker
 {
-    public enum TrackerState
-    {
-        /**
-         * Message has been accepted by the remote peer.
-         */
-        ACCEPTED,
-
-        /**
-         * Message has been rejected by the remote peer.
-         */
-        REJECTED,
-
-        /**
-         * Message has been released by the remote peer.
-         */
-        RELEASED,
-
-        /**
-         * Delivery is still pending and the state is not known.
-         */
-        UNKNOWN,
-
-        /**
-         * The link has failed and the message is in-doubt.
-         */
-        LINK_FAILED,
-
-        /**
-         * The application or the remote peer has closed the link. The state of
-         * the delivery is unknown.
-         */
-        LINK_CLOSED
-    };
-
     /**
      * The current state of the Tracker.
      */

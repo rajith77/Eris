@@ -24,30 +24,38 @@ package org.eris.messaging;
  * Represents a logical <i>Link</i> for sending messages to a destination within
  * the remote peer.
  * 
- * <h3>Creating message to send</h3> The application can use
+ * <h4>Creating message to send</h4> The application can use
  * {@link Messaging#message()} to create a message that can be used or sending.
  * To set the content use {@link Message#setContent(Object)}.
  * 
- * <h3>Tracking message delivery</h3> If the SenderMode is
- * {@link SenderMode#AT_LEAST_ONCE} the application has two options for tracking
- * messages.
+ * <h4>Tracking message delivery</h4> If the SenderMode is
+ * {@link #AT_LEAST_ONCE} the application has two options for tracking
+ * messages. <br>
+ * 
  * <ul>
  * <li>Synchronously track messages by using {@link Tracker#awaitSettlement()}
  * 
  * <pre>
  * Ex:  
- *         {@code sender.send(msg).awaitSettlement();} or <br>
- *         {@code         
- *         Tracker tracker = sender.send(msg);
- *         .....
- *         tracker.awaitSettlement();
- *         }
+ * {@code sender.send(msg).awaitSettlement();} or <br>
+ * {@code         
+ * Tracker tracker = sender.send(msg);
+ * .....
+ * tracker.awaitSettlement();
+ * }
  * </pre>
  * 
  * </li>
  * <li>Receive completions asynchronously by registering a
  * {@link CompletionListener} with the Session using
  * {@link Session#setCompletionListener(CompletionListener)}</li>
+ * </ul>
+ * 
+ * <h4>Exceptions</h4>
+ * <ul>
+ * <li>TransportException : Thrown when the underlying transport fails.</li>
+ * <li>SenderException    : Thrown when the Sender gets to an erroneous state.</li>
+ * <li>TimeoutException   : Thrown when an operation exceeds the connection timeout.</li>
  * </ul>
  */
 public interface Sender
@@ -70,7 +78,7 @@ public interface Sender
 
     /**
      * 
-     * @param {@link Message} to be sent. The application can use
+     * @param msg {@link Message} to be sent. The application can use
      *        {@link Messaging#message()} to create a message that can be used
      *        for sending.
      * 

@@ -22,22 +22,22 @@ package org.eris.messaging;
 
 /**
  * 
- * Represents a logical Session for exchanging of messages.
+ * Represents a logical <i>Session</i> for exchanging of messages.
  * 
- * <h3>Exceptions</h3> <br>
- * TransportException : Thrown when the underlying transport fails. <br>
- * SessionException   : Thrown when the Session gets to an erroneous state.
+ * <h4>Exceptions</h4>
+ * <ul>
+ * <li>TransportException : Thrown when the underlying transport fails.</li>>
+ * <li>SessionException   : Thrown when the Session gets to an erroneous state.</li>
+ * </ul>
  */
 public interface Session
 {
     /**
-     * Flag for use with reject(), accept() and release(). When used with the
+     * Flag for use with {@link Session#accept(Message, int...)},
+     * {@link Session#reject(Message, int...)} and
+     * {@link Session#release(Message, int...)} methods. When used with the
      * above methods, all messages upto that point will be affected by the given
      * action.
-     * 
-     * @see accept()
-     * @see reject()
-     * @see release()
      */
     static final int CUMULATIVE = 0x01;
 
@@ -90,31 +90,25 @@ public interface Session
 
     /**
      * Accepts the given message or all messages upto that point if the
-     * CUMULATIVE flag is used.
-     * 
-     * @see CUMULATIVE
+     * {@link Session#CUMULATIVE} flag is used.
      */
     void accept(Message msg, int... flags) throws SessionException;
 
     /**
      * Rejects the given message or all messages upto that point if the
-     * CUMULATIVE flag is used.
-     * 
-     * @see CUMULATIVE
+     * {@link Session#CUMULATIVE} flag is used.
      */
     void reject(Message msg, int... flags) throws SessionException;
 
     /**
      * Release the given message or all messages upto that point if the
-     * CUMULATIVE flag is used.
-     * 
-     * @see CUMULATIVE
+     * {@link Session#CUMULATIVE} flag is used.
      */
     void release(Message msg, int... flags) throws SessionException;
 
     /**
-     * The {@link CompletionListener} provides a way to receive message completions
-     * asynchronously.
+     * The {@link CompletionListener} provides a way to receive message
+     * completions asynchronously.
      * 
      * @see CompletionListener
      */

@@ -20,6 +20,10 @@
  */
 package org.eris.messaging;
 
+/**
+ * Specifies the level of reliability expected when sending messages.
+ * 
+ */
 public enum SenderMode
 {
     AT_MOST_ONCE, AT_LEAST_ONCE;

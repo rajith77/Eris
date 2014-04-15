@@ -25,7 +25,7 @@ package org.eris.messaging;
  * Represents a logical <i>Link</i> for receiving messages from a message-source
  * within the remote peer.
  * 
- * <h3>Capacity And CreditMode</h3> <br>
+ * <h4>Capacity And CreditMode</h4>
  * <b><i>Capacity</i></b> and <b><i>CreditMode</i></b> determines if and when
  * message credits are issued and whether or not messages should be prefetched.
  * 
@@ -35,13 +35,13 @@ package org.eris.messaging;
  * queue may end up with more messages than desired. Applications need to keep
  * this in mind.
  * 
- * <h4>How To Set CreditMode</h4> <br>
+ * <h4>How To Set CreditMode</h4>
  * The CreditMode can be specified using
  * {@link Session#createReceiver(String, ReceiverMode, CreditMode)}. If
  * {@link Session#createReceiver(String, ReceiverMode)} is used instead,
  * CreditMode defaults to {@link CreditMode#AUTO}
  * 
- * <h4>How To Set Capacity</h4> <br>
+ * <h4>How To Set Capacity</h4>
  * When the Receiver is created the default capacity is determined based on it's
  * CreditMode. <br>
  * If {@link CreditMode#AUTO} is used it will be set to "1". This can be changed
@@ -52,7 +52,7 @@ package org.eris.messaging;
  * {@link Receiver#setCapacity(int)}. The capacity can be any non negative
  * integer including zero.
  * 
- * <h4>How Message Credits Work</h4> <br>
+ * <h4>How Message Credits Work</h4>
  * When the Receiver is created, <br>
  * If CreditMode is {@link CreditMode#AUTO}, "N" message credits will be issued
  * immediately, where "N" is the default capacity as determined above. <br>
@@ -74,7 +74,7 @@ package org.eris.messaging;
  * {@link Receiver#setCapacity(int)} to issue credits when it is ready to
  * process messages.
  * 
- * <h4>Prefetch</h4> <br>
+ * <h4>Prefetch</h4>
  * If CreditMode is {@link CreditMode#AUTO}, the library will <i>prefetch</i> N
  * messages from the peer (if available) when the Receiver is created. Where N
  * is default capacity. To <b><i>disable prefetch</b></i>, you need to set
@@ -85,10 +85,12 @@ package org.eris.messaging;
  * Message delivery is started only when the application explicitly issues
  * credits.
  * 
- * <h3>Exceptions</h3> <br>
- * TransportException : Thrown when the underlying transport fails. <br>
- * ReceiverException : Thrown when the Receiver gets to an erroneous state. <br>
- * TimeoutException : Thrown when an operation exceeds the connection timeout.
+ * <h4>Exceptions</h4>
+ * <ul>
+ * <li>TransportException : Thrown when the underlying transport fails.</li>
+ * <li>ReceiverException  : Thrown when the Receiver gets to an erroneous state.</li>
+ * <li>TimeoutException   : Thrown when an operation exceeds the connection timeout.</li>
+ * </ul>
  */
 public interface Receiver
 {

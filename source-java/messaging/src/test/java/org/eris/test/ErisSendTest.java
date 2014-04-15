@@ -14,7 +14,6 @@
 package org.eris.test;
 
 import org.eris.messaging.Connection;
-import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
 import org.eris.messaging.Messaging;
 import org.eris.messaging.Sender;
@@ -33,7 +32,7 @@ public class ErisSendTest
    @Test
    public void testSend() throws Exception
    {
-      Connection con = Messaging.connection(new ConnectionSettings());
+      /*Connection con = Messaging.connection("localhost", 5672);
       con.connect();
 
       Session ssn = con.createSession();
@@ -42,6 +41,6 @@ public class ErisSendTest
       msg.setContent("Hello World");
       Tracker t = sender.send(msg);
       t.awaitSettlement();
-      con.close();
+      con.close();*/
    }
 }

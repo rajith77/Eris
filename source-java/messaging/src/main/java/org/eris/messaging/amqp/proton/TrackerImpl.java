@@ -4,7 +4,7 @@ import org.apache.qpid.proton.amqp.messaging.Accepted;
 import org.apache.qpid.proton.amqp.messaging.Rejected;
 import org.apache.qpid.proton.amqp.messaging.Released;
 import org.apache.qpid.proton.amqp.transport.DeliveryState;
-import org.eris.messaging.Tracker.TrackerState;
+import org.eris.messaging.TrackerState;
 import org.eris.util.ConditionManager;
 
 public class TrackerImpl implements org.eris.messaging.Tracker
