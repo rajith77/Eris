@@ -166,29 +166,36 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         {
             _state = State.CLOSED;
         }
-        _connection.close();
-        write();
-        //Should we wait until the remote end close the connection?
-        try
-        {
-            _networkConnection.close();
-        }
-        catch (TransportException e)
-        {
-            throw new org.eris.messaging.TransportException("Error closing network connection",e);
-        }
+
         _notificationThread.interrupt();
         try
         {
-            _notificationThread.join(getDefaultTimeout());
+            try
+            {
+                _notificationThread.join(getDefaultTimeout());
+            }
+            catch (InterruptedException e)
+            {
+                throw new org.eris.messaging.ConnectionException("Interrupted while waiting for notification thead to complete");
+            }
+            if (_notificationThread.isAlive())
+            {
+                throw new org.eris.messaging.TimeoutException("Time out while waiting for notification thread to complete");
+            }
         }
-        catch (InterruptedException e)
+        finally
         {
-            throw new org.eris.messaging.ConnectionException("Interrupted while waiting for notification thead to complete");
-        }
-        if (_notificationThread.isAlive())
-        {
-            throw new org.eris.messaging.TimeoutException("Time out while waiting for notification thread to complete");
+            _connection.close();
+            write();
+            //Should we wait until the remote end close the connection?
+            try
+            {
+                _networkConnection.close();
+            }
+            catch (TransportException e)
+            {
+                throw new org.eris.messaging.TransportException("Error closing network connection",e);
+            }
         }
     }
 
@@ -348,7 +355,29 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     void processLinks()
     {
-        Link link = _connection.linkHead(EndpointStateHelper.ANY, EndpointStateHelper.CLOSED);
+        Link link = _connection.linkHead(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+        while (link != null)
+        {
+            if (link instanceof Sender)
+            {
+                SenderImpl sender = (SenderImpl)link.getContext();
+                if (sender.isDynamicAddress())
+                {
+                    sender.setAddress(link.getRemoteTarget().getAddress());
+                }
+            }
+            else
+            {
+                ReceiverImpl receiver = (ReceiverImpl)link.getContext();
+                if (receiver.isDynamicAddress())
+                {
+                    receiver.setAddress(link.getRemoteSource().getAddress());
+                }
+            }
+            link = link.next(EndpointStateHelper.ACTIVE, EndpointStateHelper.ACTIVE);
+        }
+
+        link = _connection.linkHead(EndpointStateHelper.ANY, EndpointStateHelper.CLOSED);
         while (link != null)
         {
             link.close();
@@ -424,13 +453,28 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
             }});
 
-        SenderImpl sender = (SenderImpl) ssn.createSender("mybox", SenderMode.AT_LEAST_ONCE);
+        /*SenderImpl sender = (SenderImpl) ssn.createSender("#", SenderMode.AT_LEAST_ONCE);
         MessageImpl msg = new MessageImpl();
         msg.setContent("Hello World");
         Tracker t = sender.send(msg);
         t.awaitSettlement();
 
-        ReceiverImpl receiver = (ReceiverImpl) ssn.createReceiver("mybox",ReceiverMode.AT_LEAST_ONCE);
+        ReceiverImpl receiver = (ReceiverImpl) ssn.createReceiver("#",ReceiverMode.AT_LEAST_ONCE);
+        msg = (MessageImpl)receiver.receive();
+        ssn.accept(msg);
+        System.out.println("Msg : " + msg.getContent());
+        con.close();*/
+
+        ReceiverImpl receiver = (ReceiverImpl) ssn.createReceiver("#",ReceiverMode.AT_LEAST_ONCE);
+        Thread.sleep(1000); // Giving time for the peer to send the address created at the server side.
+        // I need to find a way to coordinate this.
+        String tempAddress = receiver.getAddress();
+        SenderImpl sender = (SenderImpl) ssn.createSender(tempAddress, SenderMode.AT_LEAST_ONCE);
+        MessageImpl msg = new MessageImpl();
+        msg.setContent("Hello World");
+        Tracker t = sender.send(msg);
+        t.awaitSettlement();
+
         msg = (MessageImpl)receiver.receive();
         ssn.accept(msg);
         System.out.println("Msg : " + msg.getContent());

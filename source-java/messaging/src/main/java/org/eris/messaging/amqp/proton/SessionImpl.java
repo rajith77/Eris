@@ -82,18 +82,28 @@ public class SessionImpl implements org.eris.messaging.Session
             throws org.eris.messaging.TransportException, org.eris.messaging.SessionException
     {
         checkPreConditions();
-        Sender sender = _session.sender(address);
-        Target target = new Target();
-        target.setAddress(address);
-        sender.setTarget(target);
+        Sender sender;
         Source source = new Source();
-        source.setAddress(address);
+        Target target = new Target();
+        if (address == null || address.isEmpty() || address.equals("#"))
+        {
+            String temp = UUID.randomUUID().toString();
+            sender = _session.sender(temp);
+            target.setDynamic(true);
+        }
+        else
+        {
+            sender = _session.sender(address);
+            target.setAddress(address);
+        }
+        sender.setTarget(target);
         sender.setSource(source);
         sender.setSenderSettleMode(mode == SenderMode.AT_MOST_ONCE ? SenderSettleMode.SETTLED
                 : SenderSettleMode.UNSETTLED);
         sender.open();
 
         SenderImpl senderImpl = new SenderImpl(address, this, sender);
+        senderImpl.setDynamicAddress(target.getDynamic());
         _senders.put(sender, senderImpl);
         sender.setContext(senderImpl);
         _conn.write();
@@ -112,12 +122,21 @@ public class SessionImpl implements org.eris.messaging.Session
             throws org.eris.messaging.TransportException, org.eris.messaging.SessionException
     {
         checkPreConditions();
-        Receiver receiver = _session.receiver(address);
+        Receiver receiver;
         Source source = new Source();
-        source.setAddress(address);
-        receiver.setSource(source);
         Target target = new Target();
-        target.setAddress(address);
+        if (address == null || address.isEmpty() || address.equals("#"))
+        {
+            String temp = UUID.randomUUID().toString();
+            receiver = _session.receiver(temp);
+            source.setDynamic(true);
+        }
+        else
+        {
+            receiver = _session.receiver(address);
+            source.setAddress(address);
+        }
+        receiver.setSource(source);
         receiver.setTarget(target);
         switch (mode)
         {
@@ -137,6 +156,7 @@ public class SessionImpl implements org.eris.messaging.Session
         receiver.open();
 
         ReceiverImpl receiverImpl = new ReceiverImpl(address, this, receiver, creditMode);
+        receiverImpl.setDynamicAddress(source.getDynamic());
         _receivers.put(receiver, receiverImpl);
         receiver.setContext(receiverImpl);
         _conn.write();

@@ -24,6 +24,8 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
 
     private AtomicInteger _unsettled = new AtomicInteger(0);
 
+    private boolean _dynamic = false;
+
     ReceiverImpl(String address, SessionImpl ssn, Receiver receiver, CreditMode creditMode)
             throws org.eris.messaging.TransportException
             {
@@ -225,6 +227,21 @@ public class ReceiverImpl implements org.eris.messaging.Receiver
         }
         _receiver.flow(credits);
         _ssn.write();
+    }
+
+    void setAddress(String addr)
+    {
+        _address = addr;
+    }
+
+    void setDynamicAddress(boolean b)
+    {
+        _dynamic = b;
+    }
+
+    boolean isDynamicAddress()
+    {
+        return _dynamic;
     }
 
     SessionImpl getSession()
