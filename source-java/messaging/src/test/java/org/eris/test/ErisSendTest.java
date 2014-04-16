@@ -13,7 +13,7 @@
 
 package org.eris.test;
 
-import org.eris.messaging.Connection;
+import org.eris.messaging.OutboundConnection;
 import org.eris.messaging.Message;
 import org.eris.messaging.Messaging;
 import org.eris.messaging.Sender;

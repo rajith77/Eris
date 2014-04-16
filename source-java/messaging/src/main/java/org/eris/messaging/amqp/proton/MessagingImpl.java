@@ -20,7 +20,7 @@
 */
 package org.eris.messaging.amqp.proton;
 
-import org.eris.messaging.Connection;
+import org.eris.messaging.OutboundConnection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
 
@@ -31,17 +31,17 @@ public class MessagingImpl
 		return new MessageImpl();
 	}
 	
-	public static Connection connection(String url)
+	public static OutboundConnection connection(String url)
 	{
 		return new ConnectionImpl(url);
 	}
 	
-	public static Connection connection(String host, int port)
+	public static OutboundConnection connection(String host, int port)
 	{
 		return new ConnectionImpl(host, port);
 	}
 	
-	public static Connection connection(ConnectionSettings settings)
+	public static OutboundConnection connection(ConnectionSettings settings)
 	{
 		return new ConnectionImpl(settings);
 	}

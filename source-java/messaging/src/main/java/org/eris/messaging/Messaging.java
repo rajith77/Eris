@@ -66,9 +66,9 @@ public class Messaging
      * Constructs a Connection object with the given URL. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see Connection#connect()
+     * @see OutboundConnection#connect()
      */
-    public static Connection connection(String url)
+    public static OutboundConnection outboundConnection(String url)
     {
         return MessagingImpl.connection(url);
     }
@@ -77,9 +77,9 @@ public class Messaging
      * Constructs a Connection object with the given host and port. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see Connection#connect()
+     * @see OutboundConnection#connect()
      */
-    public static Connection connection(String host, int port)
+    public static OutboundConnection outboundConnection(String host, int port)
     {
         return MessagingImpl.connection(host, port);
     }
@@ -89,9 +89,9 @@ public class Messaging
      * @see ConnectionSettings
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see Connection#connect()
+     * @see OutboundConnection#connect()
      */
-    public static Connection connection(ConnectionSettings settings)
+    public static OutboundConnection outboundConnection(ConnectionSettings settings)
     {
         return MessagingImpl.connection(settings);
     }

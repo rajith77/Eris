@@ -46,7 +46,7 @@ import org.eris.messaging.Tracker;
 import org.eris.threading.Threading;
 import org.eris.transport.TransportException;
 
-public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, org.eris.messaging.Connection
+public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, org.eris.messaging.OutboundConnection
 {
     private static final Logger _logger = Logger.get(ConnectionImpl.class);
 
