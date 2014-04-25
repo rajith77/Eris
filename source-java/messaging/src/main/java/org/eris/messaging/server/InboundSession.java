@@ -18,21 +18,9 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris.messaging.server;
 
-/**
- * 
- */
-public interface InboundConnection
+public interface InboundSession
 {
-    public enum InboundConnectionEventType
-    {
-        NETWORK_CONNECTION_ACCEPTED,
-        
-        NETWORK_CONNECTION_LOST,
-        
-        NETWORK_CONNECTION_IDLE_TIMEOUT,
-        
-        
-    }
+    String getName();
 }

@@ -20,6 +20,8 @@
  */
 package org.eris.messaging;
 
+import org.eris.Messaging;
+
 /**
  * Represents a logical <i>Link</i> for sending messages to a destination within
  * the remote peer.

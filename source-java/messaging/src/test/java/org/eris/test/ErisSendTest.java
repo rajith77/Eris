@@ -13,9 +13,9 @@
 
 package org.eris.test;
 
+import org.eris.Messaging;
 import org.eris.messaging.OutboundConnection;
 import org.eris.messaging.Message;
-import org.eris.messaging.Messaging;
 import org.eris.messaging.Sender;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Session;

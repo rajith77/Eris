@@ -6,13 +6,13 @@ public class ConnectionSettingsImpl extends ConnectionSettings
 {
     boolean _passive = false;
 
-    ConnectionSettingsImpl(String host, int port)
+    public ConnectionSettingsImpl(String host, int port)
     {
         _host = host;
         _port = port;
     }
 
-    ConnectionSettingsImpl(String url)
+    public ConnectionSettingsImpl(String url)
     {
         parse(url);
     }

@@ -18,20 +18,25 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris.messaging.server;
+
+import org.eris.messaging.TransportException;
 
 /**
  * Listens for incoming connections.
  */
-public interface InboundConnectionListener
+public interface InboundConnector
 {
     /**
      * Listens for incoming connections in the background until
-     * {@link InboundConnectionListener#close()} is called.
+     * {@link InboundConnector#close()} is called.
      */
     void start() throws TransportException;
 
-    InboundConnection peek();
+    /**
+     * Sets the callback for receiving inbound connections.
+     */
+    void setInboundConnectionListener(InboundConnectionListener l);
 
     /**
      * Close the listener and free any resources associated with it. This will

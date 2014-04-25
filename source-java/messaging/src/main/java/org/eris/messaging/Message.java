@@ -22,6 +22,8 @@ package org.eris.messaging;
 
 import java.util.Map;
 
+import org.eris.Messaging;
+
 /**
  * Provides a representation of a <i>Message</i>.
  * 

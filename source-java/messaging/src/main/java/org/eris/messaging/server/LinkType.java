@@ -18,41 +18,13 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris.messaging.server;
 
 /**
- * Outgoing message-delivery state
+ * Specifies the direction of message flow.
+ * 
  */
-public enum TrackerState
+public enum LinkType
 {
-    /**
-     * Message has been accepted by the remote peer.
-     */
-    ACCEPTED,
-
-    /**
-     * Message has been rejected by the remote peer.
-     */
-    REJECTED,
-
-    /**
-     * Message has been released by the remote peer.
-     */
-    RELEASED,
-
-    /**
-     * Delivery is still pending and the state is not known.
-     */
-    UNKNOWN,
-
-    /**
-     * The link has failed and the message is in-doubt.
-     */
-    LINK_FAILED,
-
-    /**
-     * The application or the remote peer has closed the link. The state of
-     * the delivery is unknown.
-     */
-    LINK_CLOSED
+    INBOUND, OUTBOUND;
 }

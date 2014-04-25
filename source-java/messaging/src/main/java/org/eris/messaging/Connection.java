@@ -39,7 +39,7 @@ package org.eris.messaging;
  * 
  * @see ConnectionSettings
  */
-public interface OutboundConnection
+public interface Connection
 {
     /**
      * Creates the underlying physical connection to the peer.

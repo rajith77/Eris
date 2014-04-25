@@ -24,10 +24,14 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
     
     public IoNetworkConnection(ConnectionSettings settings) throws TransportException
     {
+        this(settings, new Socket());
+    }
+
+    public IoNetworkConnection(ConnectionSettings settings, Socket socket) throws TransportException
+    {
         _settings = settings;
         try
         {
-            _socket = new Socket();
             _socket.setReuseAddress(true);
             _socket.setTcpNoDelay(_settings.isTcpNodelay());
             _socket.setSendBufferSize(_settings.getWriteBufferSize());
@@ -36,29 +40,32 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
         }
         catch (SocketException e)
         {
-            throw new TransportException("Error creating socket", e);
+            throw new TransportException("Error setting up socket", e);
         }
     }
-
+    
     @Override
-    public void connect() throws TransportException
+    public void start() throws TransportException
     {
         if (_delegate == null)
         {
             throw new TransportException("A receiver needs to be set (using setReceiver) before connecting");
         }
-        try
+        if (!_socket.isConnected())
         {
-            InetAddress address = InetAddress.getByName(_settings.getHost());
-            _socket.connect(new InetSocketAddress(address, _settings.getPort()), (int)_settings.getConnectTimeout());
-        }
-        catch (UnknownHostException e)
-        {
-            throw new TransportException("Error connecting to given host", e);
-        }
-        catch (IOException e)
-        {
-            throw new TransportException("IO error when connecting to peer", e);
+            try
+            {
+                InetAddress address = InetAddress.getByName(_settings.getHost());
+                _socket.connect(new InetSocketAddress(address, _settings.getPort()), (int)_settings.getConnectTimeout());
+            }
+            catch (UnknownHostException e)
+            {
+                throw new TransportException("Error connecting to given host", e);
+            }
+            catch (IOException e)
+            {
+                throw new TransportException("IO error when connecting to peer", e);
+            }
         }
         _receiver = new IoReceiver(_socket, _delegate, _settings.getReadBufferSize(), _settings.getIdleTimeout());
         _sender = new IoSender(_socket, _settings.getWriteBufferSize(), _settings.getIdleTimeout());

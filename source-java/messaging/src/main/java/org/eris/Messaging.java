@@ -18,9 +18,13 @@
  * under the License.
  *
  */
-package org.eris.messaging;
+package org.eris;
 
+import org.eris.messaging.Connection;
+import org.eris.messaging.ConnectionSettings;
+import org.eris.messaging.Message;
 import org.eris.messaging.amqp.proton.MessagingImpl;
+import org.eris.messaging.server.InboundConnector;
 
 /**
  * Provides an entry point for using the messaging library.
@@ -66,9 +70,9 @@ public class Messaging
      * Constructs a Connection object with the given URL. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see OutboundConnection#connect()
+     * @see Connection#connect()
      */
-    public static OutboundConnection outboundConnection(String url)
+    public static Connection connection(String url)
     {
         return MessagingImpl.connection(url);
     }
@@ -77,9 +81,9 @@ public class Messaging
      * Constructs a Connection object with the given host and port. <br>
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see OutboundConnection#connect()
+     * @see Connection#connect()
      */
-    public static OutboundConnection outboundConnection(String host, int port)
+    public static Connection connection(String host, int port)
     {
         return MessagingImpl.connection(host, port);
     }
@@ -89,10 +93,28 @@ public class Messaging
      * @see ConnectionSettings
      * This does not establish the underlying physical connection. 
      * The application needs to call connect() in order to establish the physical connection to the peer.
-     * @see OutboundConnection#connect()
+     * @see Connection#connect()
      */
-    public static OutboundConnection outboundConnection(ConnectionSettings settings)
+    public static Connection connection(ConnectionSettings settings)
     {
         return MessagingImpl.connection(settings);
     }
+
+    /**
+     * Constructs an InboundConnector for accepting inbound connections.
+     * @see InboundConnector
+     */
+    public static InboundConnector inboundConnector(ConnectionSettings settings)
+    {
+        return null;
+    }    
+
+    /**
+     * Constructs an InboundConnector for accepting inbound connections.
+     * @see InboundConnector
+     */
+    public static InboundConnector inboundConnector(String host, int port)
+    {
+        return null;
+    } 
 }
