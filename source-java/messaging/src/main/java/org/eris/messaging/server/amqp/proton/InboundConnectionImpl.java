@@ -28,10 +28,22 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.UnsignedInteger;
 import org.apache.qpid.proton.amqp.UnsignedShort;
+import org.apache.qpid.proton.amqp.transport.Attach;
+import org.apache.qpid.proton.amqp.transport.Begin;
+import org.apache.qpid.proton.amqp.transport.Close;
+import org.apache.qpid.proton.amqp.transport.Detach;
+import org.apache.qpid.proton.amqp.transport.Disposition;
+import org.apache.qpid.proton.amqp.transport.End;
+import org.apache.qpid.proton.amqp.transport.Flow;
 import org.apache.qpid.proton.amqp.transport.Open;
+import org.apache.qpid.proton.amqp.transport.Transfer;
+import org.apache.qpid.proton.amqp.transport.FrameBody.FrameBodyHandler;
 import org.apache.qpid.proton.engine.EndpointState;
+import org.apache.qpid.proton.engine.impl.FrameHandler;
+import org.apache.qpid.proton.framing.TransportFrame;
 import org.eris.logging.Logger;
 import org.eris.messaging.server.InboundConnection;
 import org.eris.messaging.server.ServerConnectionSettings;
@@ -39,12 +51,14 @@ import org.eris.transport.NetworkConnection;
 import org.eris.transport.Receiver;
 import org.eris.transport.TransportException;
 
-public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBuffer>
+public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBuffer>, FrameHandler, FrameBodyHandler<Integer>
 {
     private static final Logger _logger = Logger.get(InboundConnectionImpl.class);
 
     private static final int CHANNEL_ZERO = 0;
-    
+
+    private final AtomicBoolean _closed = new AtomicBoolean(false);
+
     private NetworkConnection<ByteBuffer> _networkConnection;
 
     private org.eris.transport.Sender<ByteBuffer> _sender;
@@ -62,15 +76,15 @@ public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBu
     private ServerConnectionSettings _settings;
 
     private final Queue<WriteEvent> _writeEventQueue = new LinkedList<WriteEvent>();
-    
+
     private final Queue<ProtocolEvent> _protocolEventQueue = new LinkedList<ProtocolEvent>();
-    
+
     private final Map<Integer, InboundSessionImpl> _sessions = new HashMap<Integer, InboundSessionImpl>();
 
     private int _remoteMaxFrameSize = -1;
-    
+
     private int _remoteChannelMax = -1;
-    
+
     InboundConnectionImpl(ServerConnectionSettings settings, NetworkConnection<ByteBuffer> networkCon)
     {
         _networkConnection = networkCon;
@@ -188,22 +202,27 @@ public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBu
     {
         _writeEventQueue.add(e);
     }
-    
+
     void addProtocolEvent(ProtocolEvent e)
     {
         _protocolEventQueue.add(e);
     }
-    
+
+    void addSession(int channel, InboundSessionImpl ssn)
+    {
+        _sessions.put(channel, ssn);
+    }
+
     void setRemoteChannelMax(int n)
     {
         _remoteChannelMax = n;
     }
-    
+
     void setRemoteMaxFrameSize(int size)
     {
         _remoteMaxFrameSize = size;
     }
-    
+
     /* ------------------------------------------------
      * Receiver<ByteBuffer> interface methods
      * ------------------------------------------------
@@ -237,5 +256,120 @@ public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBu
     /* ------------------------------------------------
      * End of Receiver<ByteBuffer> interface methods
      * ------------------------------------------------
+     */
+
+    /* -----------------------------------------------
+     * FrameBodyHandler methods
+     * -----------------------------------------------
+     */
+    @Override
+    public void handleOpen(Open open, Binary payload, Integer channel)
+    {
+        if(open.getMaxFrameSize().longValue() > 0)
+        {
+            _remoteMaxFrameSize = open.getMaxFrameSize().intValue();
+        }
+
+        if (open.getChannelMax().longValue() > 0)
+        {
+            _remoteChannelMax = open.getChannelMax().intValue();
+        }
+
+        ProtocolEvent ev = new ProtocolEvent(ProtocolEvent.EventType.CONNECTION_OPENED, this);
+        addProtocolEvent(ev);
+    }
+
+    @Override
+    public void handleBegin(Begin begin, Binary payload, Integer channel)
+    {
+        InboundSessionImpl ssn = new InboundSessionImpl(this);
+        ssn.setRemoteChannel(channel);
+        ssn.setNextIncomingId(begin.getNextOutgoingId());
+        addSession(channel, ssn);
+
+        ProtocolEvent ev = new ProtocolEvent(ProtocolEvent.EventType.SESSION_OPENED, ssn);
+        addProtocolEvent(ev);
+        
+        
+    }
+
+    @Override
+    public void handleAttach(Attach attach, Binary payload, Integer channel)
+    {
+
+    }
+
+    @Override
+    public void handleFlow(Flow flow, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void handleTransfer(Transfer transfer, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void handleDisposition(Disposition disposition, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void handleDetach(Detach detach, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void handleEnd(End end, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void handleClose(Close close, Binary payload, Integer channel)
+    {
+        // TODO Auto-generated method stub
+    }
+    /* -----------------------------------------------
+     * End of FrameBodyHandler methods
+     * -----------------------------------------------
+     */
+
+    /* -----------------------------------------------
+     * FrameHandler methods
+     * -----------------------------------------------
+     */
+
+    @Override
+    public boolean handleFrame(TransportFrame frame)
+    {
+        frame.getBody().invoke(this,frame.getPayload(), frame.getChannel());
+        return _closed.get();
+    }
+
+  /*  @Override
+    public void closed()
+    {
+        _closed.set(true);        
+
+    }
+*/
+    @Override
+    public boolean isHandlingFrames()
+    {
+        return true;
+    }
+    /* -----------------------------------------------
+     * End of FrameHandler methods
+     * -----------------------------------------------
      */
 }

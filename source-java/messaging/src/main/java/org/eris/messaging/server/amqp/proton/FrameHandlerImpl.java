@@ -40,7 +40,7 @@ public class FrameHandlerImpl implements FrameHandler, FrameBodyHandler<Integer>
 {    
     private final AtomicBoolean _closed = new AtomicBoolean(false);
     private InboundConnectionImpl _conn;
-    
+
     FrameHandlerImpl(InboundConnectionImpl conn)
     {
         _conn = conn;
@@ -67,7 +67,7 @@ public class FrameHandlerImpl implements FrameHandler, FrameBodyHandler<Integer>
     }
 
     @Override
-    public void handleOpen(Open open, Binary payload, Integer context)
+    public void handleOpen(Open open, Binary payload, Integer channel)
     {
         if(open.getMaxFrameSize().longValue() > 0)
         {
@@ -84,55 +84,60 @@ public class FrameHandlerImpl implements FrameHandler, FrameBodyHandler<Integer>
     }
 
     @Override
-    public void handleBegin(Begin begin, Binary payload, Integer context)
+    public void handleBegin(Begin begin, Binary payload, Integer channel)
+    {
+        InboundSessionImpl ssn = new InboundSessionImpl(_conn);
+        ssn.setRemoteChannel(channel);
+        ssn.setNextIncomingId(begin.getNextOutgoingId());
+        _conn.addSession(channel, ssn);
+
+        ProtocolEvent ev = new ProtocolEvent(ProtocolEvent.EventType.SESSION_OPENED, ssn);
+        _conn.addProtocolEvent(ev);
+    }
+
+    @Override
+    public void handleAttach(Attach attach, Binary payload, Integer channel)
     {
         
     }
 
     @Override
-    public void handleAttach(Attach attach, Binary payload, Integer context)
+    public void handleFlow(Flow flow, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void handleFlow(Flow flow, Binary payload, Integer context)
+    public void handleTransfer(Transfer transfer, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void handleTransfer(Transfer transfer, Binary payload, Integer context)
+    public void handleDisposition(Disposition disposition, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void handleDisposition(Disposition disposition, Binary payload, Integer context)
+    public void handleDetach(Detach detach, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void handleDetach(Detach detach, Binary payload, Integer context)
+    public void handleEnd(End end, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void handleEnd(End end, Binary payload, Integer context)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void handleClose(Close close, Binary payload, Integer context)
+    public void handleClose(Close close, Binary payload, Integer channel)
     {
         // TODO Auto-generated method stub
     }
