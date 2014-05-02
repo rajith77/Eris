@@ -20,7 +20,27 @@
  */
 package org.eris.messaging.server;
 
-public interface Delivery
+public interface EventListener
 {
-    Subscriber getLink();
+    void connectionOpened(InboundConnection conn);
+    
+    void connectionClosed(InboundConnection conn);
+    
+    void sessionRequested(InboundSession ssn);
+
+    void sessionClosed(InboundSession ssn);
+
+    void subscriptionRequested(Subscriber sub);
+
+    void subscriptionClosed(Subscriber sub);
+
+    void subscriptionCredit(Subscriber sub, int credits);
+
+    void publisherRequested(Publisher pub);
+    
+    void publisherClosed(Publisher pub);
+    
+    void incomingDelivery(Delivery d);
+
+    void deliveryUpdated(Delivery d);
 }

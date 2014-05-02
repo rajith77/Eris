@@ -59,5 +59,5 @@ public abstract class ConnectionSettings
     public long getIdleTimeout()
     {
         return _idleTimeout;
-    }
+    }    
 }

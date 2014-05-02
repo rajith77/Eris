@@ -18,9 +18,44 @@
  * under the License.
  *
  */
-package org.eris.messaging.server;
+package org.eris.messaging.server.amqp.proton;
 
-public interface Delivery
+/**
+ * Internal impl class to represent a protocol event.
+ * This class is not exposed via the API.
+ */
+public class ProtocolEvent
 {
-    Subscriber getLink();
+    enum EventType
+    {
+        CONNECTION_OPENED,
+        CONNECTION_CLOSED,
+        SESSION_OPENED,
+        SESSION_CLOSED,
+        LINK_OPENED,
+        LINK_CLOSED,
+        LINK_FLOW,
+        INCOMING_DELIVERY,
+        DELIVERY_UPDATED
+    };
+
+    private EventType _type;
+
+    private Object _ctx;
+
+    ProtocolEvent(EventType type, Object ctx)
+    {
+        _type = type;
+        _ctx = ctx;
+    }
+
+    public EventType getType()
+    {
+        return _type;
+    }
+
+    public Object getContext()
+    {
+        return _ctx;
+    }
 }

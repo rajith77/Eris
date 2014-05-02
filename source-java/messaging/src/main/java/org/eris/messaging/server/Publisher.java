@@ -20,7 +20,11 @@
  */
 package org.eris.messaging.server;
 
-public interface Delivery
+public interface Publisher
 {
-    Subscriber getLink();
+    InboundSession getSession();
+
+    String getAddress();
+
+    void setAddress(String address);
 }

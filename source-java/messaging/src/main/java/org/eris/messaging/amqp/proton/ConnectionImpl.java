@@ -99,7 +99,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         _connection.setContainer(UUID.randomUUID().toString());
         _connection.setHostname(_settings.getHost());
         _transport.bind(_connection);
-        //doSasl(_transport.sasl());
+        doSasl(_transport.sasl());
         _connection.open();
 
         try

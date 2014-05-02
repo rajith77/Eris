@@ -18,9 +18,37 @@
  * under the License.
  *
  */
-package org.eris.messaging.server;
+package org.eris.messaging.server.amqp.proton;
 
-public interface Delivery
+import java.nio.ByteBuffer;
+
+public class WriteEvent
 {
-    Subscriber getLink();
+    int _channel;
+
+    Object _frameBody;
+
+    ByteBuffer _payload;
+
+    public WriteEvent(int channel, Object frameBody, ByteBuffer payload)
+    {
+        _channel = channel;
+        _frameBody = frameBody;
+        _payload = payload;
+    }
+
+    public int getChannel()
+    {
+        return _channel;
+    }
+
+    public Object getFrameBody()
+    {
+        return _frameBody;
+    }
+
+    public ByteBuffer getPayload()
+    {
+        return _payload;
+    }
 }

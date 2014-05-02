@@ -20,7 +20,6 @@
  */
 package org.eris.messaging.server;
 
-import java.nio.ByteBuffer;
 
 /**
  * Represents an in-bound connection.
@@ -57,4 +56,12 @@ public interface InboundConnection
      * underlying network connection.
      */
     void close();
+    
+    void setID(String id);
+
+    void setHostname(String hostname);
+
+    String getRemoteID();
+
+    String getRemoteHostname();
 }

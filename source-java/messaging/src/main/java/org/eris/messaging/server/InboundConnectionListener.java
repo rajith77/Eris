@@ -22,5 +22,5 @@ package org.eris.messaging.server;
 
 public interface InboundConnectionListener
 {
-    void connection(InboundConnection conn);
+    void connectionRequested(InboundConnection conn);
 }
