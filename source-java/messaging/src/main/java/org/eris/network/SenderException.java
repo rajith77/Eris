@@ -1,4 +1,4 @@
-package org.eris.transport;
+package org.eris.network;
 
 @SuppressWarnings("serial")
 public class SenderException extends TransportException

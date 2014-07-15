@@ -47,9 +47,9 @@ import org.apache.qpid.proton.framing.TransportFrame;
 import org.eris.logging.Logger;
 import org.eris.messaging.server.InboundConnection;
 import org.eris.messaging.server.ServerConnectionSettings;
-import org.eris.transport.NetworkConnection;
-import org.eris.transport.Receiver;
-import org.eris.transport.TransportException;
+import org.eris.network.NetworkConnection;
+import org.eris.network.Receiver;
+import org.eris.network.TransportException;
 
 public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBuffer>, FrameHandler, FrameBodyHandler<Integer>
 {
@@ -61,7 +61,7 @@ public class InboundConnectionImpl implements InboundConnection, Receiver<ByteBu
 
     private NetworkConnection<ByteBuffer> _networkConnection;
 
-    private org.eris.transport.Sender<ByteBuffer> _sender;
+    private org.eris.network.Sender<ByteBuffer> _sender;
 
     private String _hostname;
 

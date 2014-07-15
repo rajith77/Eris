@@ -1,4 +1,4 @@
-package org.eris.transport.io;
+package org.eris.network.io;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,10 +9,10 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 import org.eris.messaging.ConnectionSettings;
-import org.eris.transport.NetworkConnection;
-import org.eris.transport.Receiver;
-import org.eris.transport.Sender;
-import org.eris.transport.TransportException;
+import org.eris.network.NetworkConnection;
+import org.eris.network.Receiver;
+import org.eris.network.Sender;
+import org.eris.network.TransportException;
 
 public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
 {

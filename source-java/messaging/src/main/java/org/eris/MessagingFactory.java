@@ -18,32 +18,19 @@
  * under the License.
  *
  */
-package org.eris.messaging.amqp.proton;
+package org.eris;
 
-import org.eris.MessagingFactory;
 import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
 
-public class MessagingFactoryImpl implements MessagingFactory
+public interface MessagingFactory
 {
-    public Message message()
-    {
-        return new MessageImpl();
-    }
+    Message message();
 
-    public Connection connection(String url)
-    {
-        return new ConnectionImpl(url);
-    }
+    Connection connection(String url);
 
-    public Connection connection(String host, int port)
-    {
-        return new ConnectionImpl(host, port);
-    }
+    Connection connection(String host, int port);
 
-    public Connection connection(ConnectionSettings settings)
-    {
-        return new ConnectionImpl(settings);
-    }
+    Connection connection(ConnectionSettings settings);
 }

@@ -18,14 +18,15 @@
 * under the License.
 *
 */
-package org.eris.transport.io;
+package org.eris.network.io;
 
 import org.eris.logging.Logger;
+import org.eris.network.Receiver;
+import org.eris.network.TransportException;
 import org.eris.threading.Threading;
-import org.eris.transport.Receiver;
-import org.eris.transport.TransportException;
 
 import javax.net.ssl.SSLSocket;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;

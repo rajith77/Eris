@@ -7,10 +7,10 @@ import org.eris.messaging.TransportException;
 import org.eris.messaging.amqp.proton.ConnectionSettingsImpl;
 import org.eris.messaging.server.InboundConnectionListener;
 import org.eris.messaging.server.InboundConnector;
-import org.eris.transport.NetworkConnection;
-import org.eris.transport.NetworkConnectionListener;
-import org.eris.transport.Server;
-import org.eris.transport.io.ServerImpl;
+import org.eris.network.NetworkConnection;
+import org.eris.network.NetworkConnectionListener;
+import org.eris.network.Server;
+import org.eris.network.io.ServerImpl;
 
 public class InboundConnectorImpl implements InboundConnector, NetworkConnectionListener<ByteBuffer>
 {
@@ -44,7 +44,7 @@ public class InboundConnectorImpl implements InboundConnector, NetworkConnection
         {
             _server.start();
         }
-        catch (org.eris.transport.TransportException e)
+        catch (org.eris.network.TransportException e)
         {
             throw new TransportException("Exception during Inbound Connector start", e);
         }

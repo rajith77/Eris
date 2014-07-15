@@ -43,10 +43,10 @@ import org.eris.logging.Logger;
 import org.eris.messaging.ReceiverMode;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Tracker;
+import org.eris.network.TransportException;
 import org.eris.threading.Threading;
-import org.eris.transport.TransportException;
 
-public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, org.eris.messaging.Connection
+public class ConnectionImpl implements org.eris.network.Receiver<ByteBuffer>, org.eris.messaging.Connection
 {
     private static final Logger _logger = Logger.get(ConnectionImpl.class);
 
@@ -57,9 +57,9 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
 
     private org.eris.messaging.ConnectionSettings _settings;
 
-    private org.eris.transport.NetworkConnection<ByteBuffer> _networkConnection;
+    private org.eris.network.NetworkConnection<ByteBuffer> _networkConnection;
 
-    private org.eris.transport.Sender<ByteBuffer> _sender;
+    private org.eris.network.Sender<ByteBuffer> _sender;
 
     private Transport _transport = Proton.transport();
 
@@ -105,11 +105,11 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
         try
         {
             // hard code for now
-            _networkConnection = new org.eris.transport.io.IoNetworkConnection(_settings);
+            _networkConnection = new org.eris.network.io.IoNetworkConnection(_settings);
             _networkConnection.setReceiver(this);
             _networkConnection.start();
         }
-        catch (org.eris.transport.TransportException e)
+        catch (org.eris.network.TransportException e)
         {
             throw new org.eris.messaging.TransportException("Exception occurred while making tcp connection to peer", e);
         }
@@ -221,7 +221,7 @@ public class ConnectionImpl implements org.eris.transport.Receiver<ByteBuffer>, 
                 _transport.outputConsumed();
             }
         }
-        catch (org.eris.transport.TransportException e)
+        catch (org.eris.network.TransportException e)
         {
             _logger.error(e, "Error while writing to ouput stream");
             throw new org.eris.messaging.TransportException("Error while writing to ouput stream", e);

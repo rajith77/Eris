@@ -1,4 +1,4 @@
-package org.eris.transport;
+package org.eris.network;
 
 public interface Sender<T>
 {

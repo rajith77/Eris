@@ -10,7 +10,7 @@
   </parent>
 
   <groupId>org.eris</groupId>
-  <artifactId>messaging</artifactId>
+  <artifactId>messaging-amqp-proton</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -22,11 +22,33 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.eris</groupId>
+      <artifactId>messaging</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
       <dependency>
         <groupId>org.eris</groupId>
         <artifactId>util</artifactId>
         <version>${project.version}</version>
       </dependency>
+
+      <dependency>
+         <groupId>org.apache.qpid</groupId>
+         <artifactId>proton-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.qpid</groupId>
+         <artifactId>proton-j-impl</artifactId>
+         <version>0.6</version>
+      </dependency>     
+ 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>

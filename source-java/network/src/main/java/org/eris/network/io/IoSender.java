@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eris.transport.io;
+package org.eris.network.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eris.logging.Logger;
+import org.eris.network.Sender;
+import org.eris.network.SenderClosedException;
+import org.eris.network.SenderException;
+import org.eris.network.TransportException;
 import org.eris.threading.Threading;
-import org.eris.transport.Sender;
-import org.eris.transport.SenderClosedException;
-import org.eris.transport.SenderException;
-import org.eris.transport.TransportException;
 
 
 public final class IoSender implements Runnable, Sender<ByteBuffer>

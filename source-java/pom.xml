@@ -8,6 +8,8 @@
   <packaging>pom</packaging>
    <modules>
       <module>messaging</module>
+      <module>network</module>
+      <module>messaging-amqp-proton</module>
       <module>util</module>
    </modules>
 

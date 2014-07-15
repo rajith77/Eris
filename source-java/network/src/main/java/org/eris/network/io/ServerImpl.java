@@ -1,4 +1,4 @@
-package org.eris.transport.io;
+package org.eris.network.io;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eris.logging.Logger;
 import org.eris.messaging.ConnectionSettings;
+import org.eris.network.NetworkConnection;
+import org.eris.network.NetworkConnectionListener;
+import org.eris.network.Server;
+import org.eris.network.TransportException;
 import org.eris.threading.Threading;
-import org.eris.transport.NetworkConnection;
-import org.eris.transport.NetworkConnectionListener;
-import org.eris.transport.Server;
-import org.eris.transport.TransportException;
 
 public class ServerImpl implements Server<ByteBuffer>, Runnable
 {

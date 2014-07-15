@@ -23,7 +23,6 @@ package org.eris;
 import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
-import org.eris.messaging.amqp.proton.MessagingImpl;
 import org.eris.messaging.server.InboundConnector;
 
 /**
@@ -56,65 +55,94 @@ import org.eris.messaging.server.InboundConnector;
  */
 public class Messaging
 {
-    private Messaging() {}
+    private static MessagingFactory MESSAGING_FACTORY;
+
+    static
+    {
+        try
+        {
+            Class<? extends MessagingFactory> clazz = Class.forName(
+                    System.getProperty("eris.messaging.impl", "org.eris.messaging.amqp.proton.MessagingFactoryImpl"))
+                    .asSubclass(MessagingFactory.class);
+            MESSAGING_FACTORY = clazz.newInstance();
+        }
+        catch (Exception e)
+        {
+            throw new Error("Unable to load implementation", e);
+        }
+    }
+
+    private Messaging()
+    {
+    }
+
     /**
-     * Provides a concrete instance of the Message interface that can be used for sending.
+     * Provides a concrete instance of the Message interface that can be used
+     * for sending.
+     * 
      * @see Message
      */
     public static Message message()
     {
-        return MessagingImpl.message();
+        return MESSAGING_FACTORY.message();
     }
 
     /**
      * Constructs a Connection object with the given URL. <br>
-     * This does not establish the underlying physical connection. 
-     * The application needs to call connect() in order to establish the physical connection to the peer.
+     * This does not establish the underlying physical connection. The
+     * application needs to call connect() in order to establish the physical
+     * connection to the peer.
+     * 
      * @see Connection#connect()
      */
     public static Connection connection(String url)
     {
-        return MessagingImpl.connection(url);
+        return MESSAGING_FACTORY.connection(url);
     }
 
     /**
      * Constructs a Connection object with the given host and port. <br>
-     * This does not establish the underlying physical connection. 
-     * The application needs to call connect() in order to establish the physical connection to the peer.
+     * This does not establish the underlying physical connection. The
+     * application needs to call connect() in order to establish the physical
+     * connection to the peer.
+     * 
      * @see Connection#connect()
      */
     public static Connection connection(String host, int port)
     {
-        return MessagingImpl.connection(host, port);
+        return MESSAGING_FACTORY.connection(host, port);
     }
 
     /**
      * Constructs a Connection object with the given ConnectionSettings.
-     * @see ConnectionSettings
-     * This does not establish the underlying physical connection. 
-     * The application needs to call connect() in order to establish the physical connection to the peer.
+     * 
+     * @see ConnectionSettings This does not establish the underlying physical
+     *      connection. The application needs to call connect() in order to
+     *      establish the physical connection to the peer.
      * @see Connection#connect()
      */
     public static Connection connection(ConnectionSettings settings)
     {
-        return MessagingImpl.connection(settings);
+        return MESSAGING_FACTORY.connection(settings);
     }
 
     /**
      * Constructs an InboundConnector for accepting inbound connections.
+     * 
      * @see InboundConnector
      */
     public static InboundConnector inboundConnector(ConnectionSettings settings)
     {
         return null;
-    }    
+    }
 
     /**
      * Constructs an InboundConnector for accepting inbound connections.
+     * 
      * @see InboundConnector
      */
     public static InboundConnector inboundConnector(String host, int port)
     {
         return null;
-    } 
+    }
 }
