@@ -23,6 +23,8 @@ package org.eris;
 import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
+import org.eris.messaging.server.InboundConnector;
+import org.eris.messaging.server.ServerConnectionSettings;
 
 public interface MessagingFactory
 {
@@ -33,4 +35,8 @@ public interface MessagingFactory
     Connection connection(String host, int port);
 
     Connection connection(ConnectionSettings settings);
+
+    InboundConnector inboundConnector(ServerConnectionSettings settings);
+
+    InboundConnector inboundConnector(String host, int port);
 }

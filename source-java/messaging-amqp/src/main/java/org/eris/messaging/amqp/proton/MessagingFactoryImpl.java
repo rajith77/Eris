@@ -24,6 +24,8 @@ import org.eris.MessagingFactory;
 import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
+import org.eris.messaging.server.InboundConnector;
+import org.eris.messaging.server.ServerConnectionSettings;
 
 public class MessagingFactoryImpl implements MessagingFactory
 {
@@ -45,5 +47,17 @@ public class MessagingFactoryImpl implements MessagingFactory
     public Connection connection(ConnectionSettings settings)
     {
         return new ConnectionImpl(settings);
+    }
+
+    @Override
+    public InboundConnector inboundConnector(ServerConnectionSettings settings)
+    {
+        return new InboundConnectorImpl(settings);
+    }
+
+    @Override
+    public InboundConnector inboundConnector(String host, int port)
+    {
+        return new InboundConnectorImpl(host, port);
     }
 }

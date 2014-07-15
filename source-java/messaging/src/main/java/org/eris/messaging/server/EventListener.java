@@ -20,27 +20,28 @@
  */
 package org.eris.messaging.server;
 
+import org.eris.messaging.Message;
+import org.eris.messaging.Tracker;
+
 public interface EventListener
 {
-    void connectionOpened(InboundConnection conn);
-    
     void connectionClosed(InboundConnection conn);
-    
+
     void sessionRequested(InboundSession ssn);
 
     void sessionClosed(InboundSession ssn);
 
-    void subscriptionRequested(Subscriber sub);
+    void subscriptionRequested(String address, Subscriber sub);
 
     void subscriptionClosed(Subscriber sub);
 
     void subscriptionCredit(Subscriber sub, int credits);
 
-    void publisherRequested(Publisher pub);
-    
-    void publisherClosed(Publisher pub);
-    
-    void incomingDelivery(Delivery d);
+    void publishingRequested(String address, Publisher pub);
 
-    void deliveryUpdated(Delivery d);
+    void publisherClosed(Publisher pub);
+
+    void incomingMessageDelivery(Publisher pub, Message msg);
+
+    void outgoingMessageDeliveryUpdated(Tracker tracker);
 }

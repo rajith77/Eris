@@ -30,7 +30,7 @@ import org.eris.logging.Logger;
 import org.eris.network.Sender;
 import org.eris.network.SenderClosedException;
 import org.eris.network.SenderException;
-import org.eris.network.TransportException;
+import org.eris.network.NetworkException;
 import org.eris.threading.Threading;
 
 
@@ -59,7 +59,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
 
     private volatile Throwable exception = null;
 
-    public IoSender(Socket socket, int bufferSize, long timeout) throws TransportException
+    public IoSender(Socket socket, int bufferSize, long timeout) throws NetworkException
     {
         this.socket = socket;
         this.buffer = new byte[pof2(bufferSize)]; // buffer size must be a power of 2
@@ -71,7 +71,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
         }
         catch (IOException e)
         {
-            throw new TransportException("Error getting output stream for socket", e);
+            throw new NetworkException("Error getting output stream for socket", e);
         }
 
         try
@@ -99,7 +99,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
         return result;
     }
 
-    public void send(ByteBuffer buf) throws TransportException
+    public void send(ByteBuffer buf) throws NetworkException
     {
         if (closed.get())
         {
@@ -181,12 +181,12 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
         }
     }
 
-    public void close() throws TransportException
+    public void close() throws NetworkException
     {
         close(true);
     }
 
-    void close(boolean reportException) throws TransportException
+    void close(boolean reportException) throws NetworkException
     {
         if (!closed.getAndSet(true))
         {
@@ -303,7 +303,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
         }
     }
 
-    public void setIdleTimeout(int i) throws TransportException
+    public void setIdleTimeout(int i) throws NetworkException
     {
         try
         {
@@ -311,7 +311,7 @@ public final class IoSender implements Runnable, Sender<ByteBuffer>
         }
         catch (Exception e)
         {
-            throw new TransportException("Error setting idle timeout",e);
+            throw new NetworkException("Error setting idle timeout",e);
         }
     }
 

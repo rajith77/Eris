@@ -2,9 +2,9 @@ package org.eris.network;
 
 public interface Sender<T>
 {
-    void send(T msg) throws TransportException;
+    void send(T msg) throws NetworkException;
 
-    void flush() throws TransportException;
+    void flush() throws NetworkException;
 
-    void close() throws TransportException;
+    void close() throws NetworkException;
 }

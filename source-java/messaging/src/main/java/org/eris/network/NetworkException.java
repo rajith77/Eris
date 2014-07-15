@@ -1,14 +1,14 @@
 package org.eris.network;
 
 @SuppressWarnings("serial")
-public class TransportException extends Exception
+public class NetworkException extends Exception
 {
-    public TransportException(String msg)
+    public NetworkException(String msg)
     {
         super(msg);
     }
 
-    public TransportException(String msg, Throwable t)
+    public NetworkException(String msg, Throwable t)
     {
         super(msg, t);
     }

@@ -24,6 +24,7 @@ import org.eris.messaging.Connection;
 import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.Message;
 import org.eris.messaging.server.InboundConnector;
+import org.eris.messaging.server.ServerConnectionSettings;
 
 /**
  * Provides an entry point for using the messaging library.
@@ -131,9 +132,9 @@ public class Messaging
      * 
      * @see InboundConnector
      */
-    public static InboundConnector inboundConnector(ConnectionSettings settings)
+    public static InboundConnector inboundConnector(ServerConnectionSettings settings)
     {
-        return null;
+        return MESSAGING_FACTORY.inboundConnector(settings);
     }
 
     /**
@@ -143,6 +144,6 @@ public class Messaging
      */
     public static InboundConnector inboundConnector(String host, int port)
     {
-        return null;
+        return MESSAGING_FACTORY.inboundConnector(host, port);
     }
 }

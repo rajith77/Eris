@@ -23,4 +23,10 @@ package org.eris.messaging.server;
 public interface InboundSession
 {
     String getName();
+
+    void accept();
+
+    void reject(ReasonCode code, String desc);
+
+    void close();
 }

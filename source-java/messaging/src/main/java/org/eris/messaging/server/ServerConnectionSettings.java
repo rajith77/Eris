@@ -20,18 +20,30 @@
  */
 package org.eris.messaging.server;
 
+import java.util.UUID;
+
 import org.eris.messaging.ConnectionSettings;
 
 public class ServerConnectionSettings extends ConnectionSettings
 {
     protected int _outBufferSize = 1024;
+
     protected int _maxFrameSize = -1;
+
     protected int _channelMax = 65535;
-    
+
+    protected String _serverID = "";
+
     public ServerConnectionSettings(String host, int port)
+    {
+        this(host, port, UUID.randomUUID().toString());
+    }
+
+    public ServerConnectionSettings(String host, int port, String serverID)
     {
         _host = host;
         _port = port;
+        _serverID = serverID;
     }
 
     public int getOutBufferSize()
@@ -87,5 +99,10 @@ public class ServerConnectionSettings extends ConnectionSettings
     public void setIdleTimeout(long idleTimeout)
     {
         _idleTimeout = idleTimeout;
+    }
+
+    public String getServerID()
+    {
+        return _serverID;
     }
 }

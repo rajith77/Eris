@@ -22,7 +22,7 @@ package org.eris.network.io;
 
 import org.eris.logging.Logger;
 import org.eris.network.Receiver;
-import org.eris.network.TransportException;
+import org.eris.network.NetworkException;
 import org.eris.threading.Threading;
 
 import javax.net.ssl.SSLSocket;
@@ -74,12 +74,12 @@ final class IoReceiver implements Runnable
        receiverThread.start();
    }
   
-   public void close() throws TransportException
+   public void close() throws NetworkException
    {
        close(false);
    }
 
-   void close(boolean block) throws TransportException
+   void close(boolean block) throws NetworkException
    {
        if (!closed.getAndSet(true))
        {
@@ -108,17 +108,17 @@ final class IoReceiver implements Runnable
                    receiverThread.join(timeout);
                    if (receiverThread.isAlive())
                    {
-                       throw new TransportException("join timed out");
+                       throw new NetworkException("join timed out");
                    }
                }
            }
            catch (InterruptedException e)
            {
-               throw new TransportException("Error when closing", e);
+               throw new NetworkException("Error when closing", e);
            }
            catch (IOException e)
            {
-               throw new TransportException("Error when closing",e);
+               throw new NetworkException("Error when closing",e);
            }
 
        }

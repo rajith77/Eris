@@ -20,14 +20,13 @@
  */
 package org.eris.messaging.server;
 
-
 /**
  * Represents an in-bound connection.
  */
 public interface InboundConnection
 {
     /**
-     * Accepts the network connection and initiate the high level protocol
+     * Accepts the network connection and initiate the underlying protocol
      * handshake.
      */
     void accept();
@@ -35,13 +34,13 @@ public interface InboundConnection
     /**
      * Rejects by closing the network connection. This is useful if the
      * application is unable to accept any new connections at this point. It
-     * will provide a reason-code if the high level protocol supports it.
+     * will provide a reason-code if the underlying protocol supports it.
      */
-    void reject();
+    void reject(ReasonCode code, String desc);
 
     /**
      * Rejects by closing the network connection, but provides an alternative
-     * endpoint to connect to if the high level protocol supports it.
+     * endpoint to connect to if the underlying protocol supports it.
      */
     void redirect();
 
@@ -49,19 +48,33 @@ public interface InboundConnection
      * Once you accept the Connection, all state changes are notified via the
      * event Listener.
      */
-    void setEventListener();
+    void setEventListener(EventListener l);
 
     /**
-     * Orderly shutdown at the high level protocol level. Also closes the
-     * underlying network connection.
+     * Orderly shutdown at the underlying protocol. Also closes the underlying
+     * network connection.
      */
     void close();
-    
-    void setID(String id);
 
-    void setHostname(String hostname);
+    /**
+     * An ID set by the application to identify the connection.
+     */
+    void setLocalID(String id);
 
+    /**
+     * Retrieve the local identifier set by the application
+     */
+    String getLocalID();
+
+    /**
+     * Return the ID assigned by the remote peer if exposed by the underlying
+     * protocol.
+     */
     String getRemoteID();
 
+    /**
+     * Return the ID assigned by the remote peer if exposed by the underlying
+     * protocol or the network layer.
+     */
     String getRemoteHostname();
 }

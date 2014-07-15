@@ -23,7 +23,7 @@ package org.eris.threading;
 
 import java.util.concurrent.Executor;
 
-public class QpidThreadExecutor implements Executor
+public class ThreadExecutorImpl implements Executor
 {
     public void execute(Runnable command)
     {

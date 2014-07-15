@@ -12,7 +12,7 @@ import org.eris.messaging.ConnectionSettings;
 import org.eris.network.NetworkConnection;
 import org.eris.network.NetworkConnectionListener;
 import org.eris.network.Server;
-import org.eris.network.TransportException;
+import org.eris.network.NetworkException;
 import org.eris.threading.Threading;
 
 public class ServerImpl implements Server<ByteBuffer>, Runnable
@@ -35,7 +35,7 @@ public class ServerImpl implements Server<ByteBuffer>, Runnable
     }
 
     @Override
-    public void start() throws TransportException
+    public void start() throws NetworkException
     {
         try
         {
@@ -45,7 +45,7 @@ public class ServerImpl implements Server<ByteBuffer>, Runnable
         }
         catch (IOException e)
         {
-            throw new TransportException(String.format("Error setting up socket for %s : %s", _settings.getHost(),
+            throw new NetworkException(String.format("Error setting up socket for %s : %s", _settings.getHost(),
                     _settings.getPort()), e);
         }
 
@@ -56,7 +56,7 @@ public class ServerImpl implements Server<ByteBuffer>, Runnable
         catch (Exception e)
         {
             shutdown();
-            throw new TransportException("Error creating accept thread. Server shutting down", e);
+            throw new NetworkException("Error creating accept thread. Server shutting down", e);
         }
         _acceptThread.start();
     }
@@ -81,7 +81,7 @@ public class ServerImpl implements Server<ByteBuffer>, Runnable
                     _logger.error(e, "IO Error when accepting connection on %s", _serverSocket.getInetAddress());
                     shutdown();
                 }
-                catch (TransportException e)
+                catch (NetworkException e)
                 {
                     _logger.error("Transport error when accepting connection on %s", _serverSocket.getInetAddress());
                     shutdown();

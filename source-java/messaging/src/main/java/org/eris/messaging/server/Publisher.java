@@ -20,11 +20,20 @@
  */
 package org.eris.messaging.server;
 
+import org.eris.messaging.Message;
+import org.eris.messaging.Tracker;
+
 public interface Publisher
 {
     InboundSession getSession();
 
     String getAddress();
 
-    void setAddress(String address);
+    void accept();
+
+    void reject(ReasonCode code, String desc);
+
+    Tracker send(Message m);
+
+    void close();
 }

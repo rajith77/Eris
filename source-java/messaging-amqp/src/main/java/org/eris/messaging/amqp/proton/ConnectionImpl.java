@@ -43,7 +43,7 @@ import org.eris.logging.Logger;
 import org.eris.messaging.ReceiverMode;
 import org.eris.messaging.SenderMode;
 import org.eris.messaging.Tracker;
-import org.eris.network.TransportException;
+import org.eris.network.NetworkException;
 import org.eris.threading.Threading;
 
 public class ConnectionImpl implements org.eris.network.Receiver<ByteBuffer>, org.eris.messaging.Connection
@@ -109,7 +109,7 @@ public class ConnectionImpl implements org.eris.network.Receiver<ByteBuffer>, or
             _networkConnection.setReceiver(this);
             _networkConnection.start();
         }
-        catch (org.eris.network.TransportException e)
+        catch (org.eris.network.NetworkException e)
         {
             throw new org.eris.messaging.TransportException("Exception occurred while making tcp connection to peer", e);
         }
@@ -192,7 +192,7 @@ public class ConnectionImpl implements org.eris.network.Receiver<ByteBuffer>, or
             {
                 _networkConnection.close();
             }
-            catch (TransportException e)
+            catch (NetworkException e)
             {
                 throw new org.eris.messaging.TransportException("Error closing network connection",e);
             }
@@ -221,7 +221,7 @@ public class ConnectionImpl implements org.eris.network.Receiver<ByteBuffer>, or
                 _transport.outputConsumed();
             }
         }
-        catch (org.eris.network.TransportException e)
+        catch (org.eris.network.NetworkException e)
         {
             _logger.error(e, "Error while writing to ouput stream");
             throw new org.eris.messaging.TransportException("Error while writing to ouput stream", e);

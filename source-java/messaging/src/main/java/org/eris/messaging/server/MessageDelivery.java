@@ -20,7 +20,9 @@
  */
 package org.eris.messaging.server;
 
-public interface Delivery
+import org.eris.messaging.Message;
+
+public interface MessageDelivery
 {
-    Subscriber getLink();
+    Message getMessage();
 }

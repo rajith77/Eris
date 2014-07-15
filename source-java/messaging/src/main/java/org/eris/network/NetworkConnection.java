@@ -6,7 +6,7 @@ public interface NetworkConnection<T>
 
     public Sender<T> getSender();
 
-    public void start() throws TransportException;
+    public void start() throws NetworkException;
 
-    public void close() throws TransportException;
+    public void close() throws NetworkException;
 }

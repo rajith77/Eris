@@ -1,7 +1,7 @@
 package org.eris.network;
 
 @SuppressWarnings("serial")
-public class SenderException extends TransportException
+public class SenderException extends NetworkException
 {
     public SenderException(String msg)
     {

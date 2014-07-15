@@ -1,12 +1,31 @@
-package org.eris.messaging.server.amqp.proton;
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+package org.eris.messaging.amqp.proton;
 
 import java.nio.ByteBuffer;
 
-import org.eris.messaging.ConnectionSettings;
 import org.eris.messaging.TransportException;
-import org.eris.messaging.amqp.proton.ConnectionSettingsImpl;
 import org.eris.messaging.server.InboundConnectionListener;
 import org.eris.messaging.server.InboundConnector;
+import org.eris.messaging.server.ServerConnectionSettings;
 import org.eris.network.NetworkConnection;
 import org.eris.network.NetworkConnectionListener;
 import org.eris.network.Server;
@@ -14,7 +33,7 @@ import org.eris.network.io.ServerImpl;
 
 public class InboundConnectorImpl implements InboundConnector, NetworkConnectionListener<ByteBuffer>
 {
-    private ConnectionSettings _settings;
+    private ServerConnectionSettings _settings;
 
     private Server<ByteBuffer> _server;
 
@@ -22,10 +41,10 @@ public class InboundConnectorImpl implements InboundConnector, NetworkConnection
 
     InboundConnectorImpl(String host, int port)
     {
-        this(new ConnectionSettingsImpl(host, port));
+        this(new ServerConnectionSettings(host, port));
     }
 
-    InboundConnectorImpl(ConnectionSettings settings)
+    InboundConnectorImpl(ServerConnectionSettings settings)
     {
         _settings = settings;
     }
@@ -37,14 +56,14 @@ public class InboundConnectorImpl implements InboundConnector, NetworkConnection
         {
             throw new TransportException("InboundConnectionListener needs to be set before starting the connector");
         }
-        
+
         // HardCode for now
         _server = new ServerImpl(_settings);
         try
         {
             _server.start();
         }
-        catch (org.eris.network.TransportException e)
+        catch (org.eris.network.NetworkException e)
         {
             throw new TransportException("Exception during Inbound Connector start", e);
         }
@@ -65,7 +84,7 @@ public class InboundConnectorImpl implements InboundConnector, NetworkConnection
     @Override
     public void connection(NetworkConnection<ByteBuffer> con)
     {
-                
+        InboundConnectionImpl inConn = new InboundConnectionImpl(_settings, con);
+        _listener.connectionRequested(inConn);
     }
-
 }

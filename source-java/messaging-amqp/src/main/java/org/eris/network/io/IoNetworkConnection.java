@@ -12,7 +12,7 @@ import org.eris.messaging.ConnectionSettings;
 import org.eris.network.NetworkConnection;
 import org.eris.network.Receiver;
 import org.eris.network.Sender;
-import org.eris.network.TransportException;
+import org.eris.network.NetworkException;
 
 public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
 {
@@ -22,12 +22,12 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
     private IoReceiver _receiver;
     private IoSender _sender;
     
-    public IoNetworkConnection(ConnectionSettings settings) throws TransportException
+    public IoNetworkConnection(ConnectionSettings settings) throws NetworkException
     {
         this(settings, new Socket());
     }
 
-    public IoNetworkConnection(ConnectionSettings settings, Socket socket) throws TransportException
+    public IoNetworkConnection(ConnectionSettings settings, Socket socket) throws NetworkException
     {
         _settings = settings;
         _socket = socket;
@@ -41,16 +41,16 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
         }
         catch (SocketException e)
         {
-            throw new TransportException("Error setting up socket", e);
+            throw new NetworkException("Error setting up socket", e);
         }
     }
     
     @Override
-    public void start() throws TransportException
+    public void start() throws NetworkException
     {
         if (_delegate == null)
         {
-            throw new TransportException("A receiver needs to be set (using setReceiver) before connecting");
+            throw new NetworkException("A receiver needs to be set (using setReceiver) before connecting");
         }
         if (!_socket.isConnected())
         {
@@ -61,11 +61,11 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
             }
             catch (UnknownHostException e)
             {
-                throw new TransportException("Error connecting to given host", e);
+                throw new NetworkException("Error connecting to given host", e);
             }
             catch (IOException e)
             {
-                throw new TransportException("IO error when connecting to peer", e);
+                throw new NetworkException("IO error when connecting to peer", e);
             }
         }
         _receiver = new IoReceiver(_socket, _delegate, _settings.getReadBufferSize(), _settings.getIdleTimeout());
@@ -85,7 +85,7 @@ public class IoNetworkConnection implements NetworkConnection<ByteBuffer>
     }
 
     @Override
-    public void close() throws TransportException
+    public void close() throws NetworkException
     {
         _sender.close();
         _receiver.close();

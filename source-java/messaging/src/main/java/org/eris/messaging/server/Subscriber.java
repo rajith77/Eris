@@ -22,9 +22,11 @@ package org.eris.messaging.server;
 
 public interface Subscriber
 {
-    InboundSession getSession();
-
     String getAddress();
 
-    void setAddress(String address);
+    void accept();
+
+    void reject(ReasonCode code, String desc);
+
+    void close();
 }
